@@ -1,0 +1,4 @@
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+This standard operating procedure describes the default practices of the experimental lab group lead by Donald P. Green at Columbia University. This guide is meant as a stopgap, not a replacement for rigorous project-specific pre-analysis plans (PAPs). In particular, many experiments encounter problems in implementation or unforseen logistical complications and so veer into territory undescribed by the PAP.
+
+This is a living document. If ever you encounter an experimental situation not covered herewithin, please email or submit an issue request on GitHub. Additionally, when referencing this document, please be sure to note the version.
