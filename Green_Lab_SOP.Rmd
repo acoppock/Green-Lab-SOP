@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.2: June 9, 2015'
+date: 'Version 0.2: July 1, 2015'
 output:
   html_document:
     theme: cosmo
