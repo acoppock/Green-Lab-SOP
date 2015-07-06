@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.2b: July 6, 2015'
+date: 'Version 0.3: July 6, 2015'
 output:
   pdf_document:
     toc: yes
@@ -83,7 +83,13 @@ probabilities <- rowMeans(Z_mat)
 plot(probabilities, ylim=c(0,1))
 ```
 
-The plot confirms the analytic solution. The first 600 names have probability of assignment 0.5, and names 601 through 800 (the duplicates) have probabiltity 0.75.
+The plot confirms the analytic solution. The first 600 names have probability of assignment 0.5, and names 601 through 800 (the duplicates) have probability 0.75.
+
+# Estimation when subjects are assigned with varying treatment probabilities
+
+Sometimes—intentionally or not—subjects are assigned to treatment with (known) probabilities that vary from subject to subject. For example, subjects in a blocked design may be assigned with probabilities that are higher for some blocks than others.  Except in extreme cases (defined below), IPW will be used to estimate the average treatment effect when subjects’ probability of treatment varies.  See @Gerber2012, chapters 3-4 for examples of this estimator.
+
+Extreme cases in which the least-squares dummy variable estimator (LSDV) will be used instead of the IPW estimator are those in which a small number of extremely large blocks are assigned to treatment with very skewed probabilities.  For example, imagine a block-randomized experiment with two blocks: 500 of 1000 subjects in Block 1 are assigned to treatment, while 5 of 100,000 in Block 2 are assigned to treatment.  IPW would place inordinate weight on the second, relatively uninformative block. To avoid these cases, LSDV would be used if the following trump condition is met: the IPW weight placed on any one block is more than 100 times as large as the LSDV weight.
 
 # Outliers
 
