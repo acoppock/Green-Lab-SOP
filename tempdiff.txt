@@ -1,0 +1,340 @@
+4c4
+< date: 'Version 0.3: July 6, 2015'
+---
+> date: 'Version 0.3: July 7, 2015'
+18,44c18
+< # When randomization doesn’t go according to plan
+< 
+< ## Learning of a restricted randomization
+< 
+< Sometimes we may learn or realize ex post that certain randomizations were disallowed. For example, an NGO partner may reveal that they would have canceled the RCT if a particular unit had not been assigned to the treatment group. Or, we may realize that we implicitly did a restricted randomization, since we checked covariate balance prior to implementing the treatment assignment, and if there had been a large enough imbalance, we would have re-randomized. In these situations, we will use randomization inference, excluding the disallowed randomizations.
+< 
+< ## Duplicate records in the dataset used for randomization
+< 
+< After treatment has begun, we may learn that there were duplicate records in the dataset that was used to randomly assign subjects. This raises the problems that (1) a subject could be assigned to more than one arm, and (2) subjects with duplicate records had a higher probability of assignment to treatment than subjects with unique records.
+< 
+< How we handle this situation depends on two questions.
+< 
+< Question 1: Were the multiple assignments of duplicate records made simultaneously, or can they be ordered in time?
+< 
+< For example, when applicants for a social program are randomly assigned as their applications are processed, random assignment may continue for months or years, and in unusual cases, a persistent applicant who was originally assigned to the control group may later succeed in getting assigned to treatment under a duplicate record. In that case, the existence and number of duplicate records may be affected by the initial assignment.
+< 
+< If the assignments can be ordered in time, we will treat the initial assignment as the correct one, and any noncompliance with the initial assignment will be handled the same way as for subjects who did not have duplicate records.
+< 
+< If the assignments were made simultaneously, Question 2 should be considered.
+< 
+< Question 2: Is it reasonable to say that if a subject was assigned to more than one arm, one of her assignments “trumps” the other(s)?
+< 
+< For example, in a two-arm trial where the treatment is an attempted phone call and the control condition is simply no attempt (without any active steps to prohibit a phone call), it seems reasonable to decide that treatment trumps control—i.e., assigning a subject with duplicate records to both conditions is like assigning her to treatment. In contrast, in a treatment/placebo design where the treatment and placebo are attempted conversations about two different topics, we would hesitate to assume that treatment trumps placebo. And in a three-arm trial with two active treatments and a control condition, it might be reasonable to assume that one treatment trumps the other if the former includes all of the latter’s activities and more, but otherwise we would hesitate to make that assumption.
+< 
+< If the trump assumption can be reasonably made, then in the analysis, we will take the following steps: 
+< 
+< 1. Deduplicate the records.
+---
+> # Reliance on Permutation Methods
+46c20
+< 2. Use the trump assumption to reclassify any subject who was assigned to more than one arm.
+---
+> For significance tests and p-values, we will either report Studentized permutation tests [@Chung2013] or use permutation methods to check the accuracy of asymptotic approximations.
+48c22
+< 3. Calculate each subject’s probabilities of assignment to each arm, where "assignment" means the unique classification from step 2. These probabilities will depend on the number of records for the subject in the original dataset.
+---
+> For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
+50c24
+< 4. Use inverse probability-of-assignment weighting (IPW) to estimate treatment effects.
+---
+> # Covariate adjustment
+52c26
+< If the trump assumption cannot be reasonably made, then we will replace step 2 with a step that excludes from the analysis any subject who was assigned to more than one arm. We will then check whether steps 3 and 4 still need to be performed. (For example, in a two-arm Bernoulli-randomized trial with intended probabilities of assignment of 2 / 3 to treatment and 1 / 3 to control, a subject with two records has probability 4 / 9 of two assignments to treatment, 4 / 9 of one assignment to treatment and one to control, and 1 / 9 of two assignments to control. Conditional on remaining in the analysis after we exclude subjects who were assigned to both treatment and control, she has probability 4 / 5 of assignment to treatment.)
+---
+> ## Default estimation methods
+54c28
+< ### Example: Fundraising Experiment
+---
+> Estimation methods for the primary analysis will normally have been specified in the PAP. For reference in what follows, here we describe our default methods for a unit-randomized experiment with N subjects. Let $M < N$ denote the largest integer such that at least $M$ subjects are assigned to each arm.
+56c30
+< Suppose a fundraising experiment randomly assigns 500 of 1,000 names to a treatment that consists of an invitation to contribute to a charitable cause. However, it is later discovered that 600 names appear once and 200 names appear twice. Before the invitations are mailed, duplicate invitations are discarded, so that no one receives more than one invitation.
+---
+> - If $M \geq 20$ , we use least squares regression of Y on T, X, and T * X, where Y is the outcome, T is the treatment indicator, and X is a set of one or more mean-centered covariates (see "Choice of covariates" below for guidelines on the choice and number of covariates). The coefficient on T estimates the average effect of assignment to treatment. See @Lin2012a for an informal description of this estimator.
+58c32
+< In this case, the experimental procedure justifies the trump assumption. Names that are assigned once or twice are in treatment, the remainder are in control. It's easy enough in this example to calculate analytic probabilities (0.5 for those who appear once, 0.75 for those who appear twice).  However, in some situations, simulating the exact prodecure is the best way to determine probabilities (it can also be a good way to check your work!).  Here is a short simulation in r that confirms the analytic solution.
+---
+> - If $M < 20 \leq N$ , we use least squares regression of Y on T and X.
+60,62c34
+< ```{r, cache=TRUE}
+< # Load randomizr for complete_ra()
+< library(randomizr)
+---
+> - If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in Gerber and Green discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
+64,67c36
+< # Make a list of 1000 names. 200 names appear twice
+< name_ids <- c(paste0("name_", sprintf("%03d", 1:600)),
+<               paste0("name_", sprintf("%03d", 601:800)),
+<               paste0("name_", sprintf("%03d", 601:800)))
+---
+> ## Choice of covariates
+69,79c38
+< # Conduct simulation
+< sims <- 10000
+< Z_mat <- matrix(NA, nrow = 800, ncol = sims)
+< for(i in 1:sims){
+<   # Conduct assignment among the 1000 names
+<   Z_1000 <- complete_ra(1000, 500)
+<   # Check if names were ever assigned
+<   Z_800 <- as.numeric(tapply(Z_1000, name_ids, sum) > 0)
+<   # Save output
+<   Z_mat[,i] <- Z_800
+< }
+---
+> Ordinarily our choice of covariates for adjustment will have been specified in the PAP.
+81,84c40
+< # Calculate probabilities of assignment
+< probabilities <- rowMeans(Z_mat)
+< plot(probabilities, ylim=c(0,1))
+< ```
+---
+> With M and N as defined above, we will include no more than $M / 20$ covariates in regressions with treatment-covariate interactions, and no more than $N / 20$ covariates in regressions without such interactions.[^5]
+86c42
+< The plot confirms the analytic solution. The first 600 names have probability of assignment 0.5, and names 601 through 800 (the duplicates) have probability 0.75.
+---
+> In general, covariates should be measured before randomization. To make any exceptions to this rule, we need to have a convincing argument that either (1) the variable is a measure of pre-randomization conditions, and treatment assignment had no effect on measurement error, or (2) although the variable is wholly or partly a measure of post-randomization conditions, it could not have been affected by treatment assignment. (Rainfall on Election Day would probably satisfy #2.)
+88c44
+< # Estimation when subjects are assigned with varying treatment probabilities
+---
+> Occasionally a new source of data on baseline characteristics becomes available after random assignment (e.g., when political campaigns join forces and merge their datasets). To decide which (if any) variables derived from the new data source should be included as covariates, we will consult a "blind jury"" of collaborators or colleagues. The jury should not see treatment effect estimates or any information that might suggest whether inclusion of a covariate would make the estimated effects bigger or smaller. Instead, they should be asked which covariates they would have included if the new data source had been available before the PAP was registered.
+90c46
+< Sometimes—intentionally or not—subjects are assigned to treatment with (known) probabilities that vary from subject to subject. For example, subjects in a blocked design may be assigned with probabilities that are higher for some blocks than others.  Except in extreme cases (defined below), IPW will be used to estimate the average treatment effect when subjects’ probability of treatment varies.  See @Gerber2012, chapters 3-4 for examples of this estimator.
+---
+> Covariates should generally be chosen on the basis of their expected ability to help predict outcomes, regardless of whether they appear well-balanced or imbalanced across treatment arms.[^6] But there may be occasions when the covariate list specified in the PAP omitted a potentially important covariate (due to either an oversight or the need to keep the list short when N is small) with a nontrivial imbalance. Protection against ex post bias (conditional on the observed imbalance) is then a legitimate concern.[^7] However, if observed imbalances are allowed to influence the choice of covariates,[^8] the following guidelines should be observed:
+92c48
+< Extreme cases in which the least-squares dummy variable estimator (LSDV) will be used instead of the IPW estimator are those in which a small number of extremely large blocks are assigned to treatment with very skewed probabilities.  For example, imagine a block-randomized experiment with two blocks: 500 of 1000 subjects in Block 1 are assigned to treatment, while 5 of 100,000 in Block 2 are assigned to treatment.  IPW would place inordinate weight on the second, relatively uninformative block. To avoid these cases, LSDV would be used if the following trump condition is met: the IPW weight placed on any one block is more than 100 times as large as the LSDV weight.
+---
+> 1. If possible, the balance checks and decisions about adjustment should be finalized before we see unblinded outcome data.
+94c50
+< # Outliers
+---
+> 2. The _direction_ of the observed imbalance (e.g., whether the treatment group or the control group appears more advantaged at baseline) should not be allowed to influence decisions about adjustment. We will either pre-specify criteria that depend on the size of the imbalance but not its direction, or consult a "blind jury" that will not see the direction of imbalance or any other information that suggests how the adjustment would affect the point estimates.
+96c52
+< Except as specified in the PAP, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
+---
+> 3. The estimator specified in the PAP will always be reported and labeled as such, even if alternative estimates are also reported. See also "Robustness checks" below.
+98c54
+< # Reliance on Permutation Methods
+---
+> [^5]: The purpose of this rule of thumb is to make it unlikely that adjustment leads to substantially worse precision or appreciable finite-sample bias. If time allows, simulations (using baseline data or prior studies) could provide additional guidance during the development of a PAP.
+100c56
+< For significance tests and p-values, we will either report Studentized permutation tests [@Chung2013] or use permutation methods to check the accuracy of asymptotic approximations.
+---
+> [^6]: As Bruhn and McKenzie [-@Bruhn2009, p. 226] emphasize, "greater power is achieved by always adjusting for a covariate that is highly correlated with the outcome of interest, regardless of its distribution between groups."
+102c58
+< For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
+---
+> [^7]: See Lin [-@Lin2012b; -@Lin2013, p.308]  and references therein for discussion of this point.
+104c60
+< # Attrition
+---
+> [^8]: Commonly used standard error estimators assume that we would adjust for the same set of covariates regardless of which units were assigned to which treatment arm. Letting observed imbalances influence the choice of covariates violates this assumption. In the scenario studied by @Permutt1990, the result is that the significance test for the treatment effect has a true Type I error probability that is lower than the nominal level—i.e., the test is conservative.
+106c62
+< We will routinely perform three types of checks for asymmetrical attrition:[^1]
+---
+> ## Missing covariate values
+108c64
+< 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
+---
+> Observations with missing covariate values will be included in the analysis as long as the outcome measure and treatment assignment are non-missing. Ordinarily, methods for handling missing values will have been specified in the PAP. If not, we will use the following approach:
+110c66
+< 2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test[^2] of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.[^3] We will use at least 10,000 randomizations, and our seed for the random number generator will be 1234567.
+---
+> 1. If no more than 10% of the covariate's values are missing, recode the missing values to the overall mean. (Do not use arm-specific means.)
+112c68
+< 3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test, using at least 10,000 randomizations and the seed 1234567.
+---
+> 2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant. If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
+114c70
+< In checks #2 and #3, p-values below 0.10 will be considered evidence of asymmetrical attrition.
+---
+> ## Robustness Checks
+116c72
+< If any of those checks raises a red flag, and if the PAP has not specified methods for addressing attrition bias, we will follow these procedures:
+---
+> Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary, and if alternative estimates differ substantially, we will note the lack of robustness and be appropriately restrained in our conclusions.
+118c74
+< 1. Rely on second-round sampling of nonrespondents, combined with worst-case bounds,[^4] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
+---
+> For binary or count-data outcomes, some referees prefer estimates based on nonlinear models such as logit, probit, or Poisson regression. Although we disagree with this preference (the robustness of least squares adjustment in RCTs is supported by both theory and simulation evidence),[^9] we will provide supplementary estimates derived from nonlinear models (using marginal effects calculations) if requested by referees. We prefer logits to probits because adjustment based on the probit MLE is not misspecification-robust.[^10]
+120c76
+< 2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme-value (Manski-type) bounds. (If the outcome has unbounded range, report extreme-value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
+---
+> [^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 or @Judkins2014.
+122c78
+< [^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Covariate adjustment."
+---
+> [^10]: @Freedman2008; @Firth1998. Lin gave an [informal discussion in a blog comment](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
+124c80
+< [^2]: @Wooldridge2010 [p. 62].
+---
+> # Estimation when subjects are assigned with varying treatment probabilities
+126c82
+< [^3]: Note that in the case of a two-arm trial, the Studentized permutation test does not compare the estimated treatment effect with its empirical distribution, but instead compares a heteroskedasticity-robust t-statistic with its empirical distribution. For background and motivation, see @Romano2009 and @Chung2013.
+---
+> Sometimes—intentionally or not—subjects are assigned to treatment with (known) probabilities that vary from subject to subject. For example, subjects in a blocked design may be assigned with probabilities that are higher for some blocks than others.  Except in extreme cases (defined below), IPW will be used to estimate the average treatment effect when subjects’ probability of treatment varies.  See @Gerber2012, chapters 3-4 for examples of this estimator.
+128c84
+< [^4]: Aronow et al. (2015).
+---
+> Extreme cases in which the least-squares dummy variable estimator (LSDV) will be used instead of the IPW estimator are those in which a small number of extremely large blocks are assigned to treatment with very skewed probabilities.  For example, imagine a block-randomized experiment with two blocks: 500 of 1000 subjects in Block 1 are assigned to treatment, while 5 of 100,000 in Block 2 are assigned to treatment.  IPW would place inordinate weight on the second, relatively uninformative block. To avoid these cases, LSDV would be used if the following trump condition is met: the IPW weight placed on any one block is more than 100 times as large as the LSDV weight.
+166c122
+< # Covariate adjustment
+---
+> # Attrition
+168c124
+< ## Default estimation methods
+---
+> We will routinely perform three types of checks for asymmetrical attrition:[^1]
+170c126
+< Estimation methods for the primary analysis will normally have been specified in the PAP. For reference in what follows, here we describe our default methods for a unit-randomized experiment with N subjects. Let $M < N$ denote the largest integer such that at least $M$ subjects are assigned to each arm.
+---
+> 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
+172c128
+< - If $M \geq 20$ , we use least squares regression of Y on T, X, and T * X, where Y is the outcome, T is the treatment indicator, and X is a set of one or more mean-centered covariates (see "Choice of covariates" below for guidelines on the choice and number of covariates). The coefficient on T estimates the average effect of assignment to treatment. See @Lin2012a for an informal description of this estimator.
+---
+> 2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test[^2] of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.[^3] We will use at least 10,000 randomizations, and our seed for the random number generator will be 1234567.
+174c130
+< - If $M < 20 \leq N$ , we use least squares regression of Y on T and X.
+---
+> 3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test, using at least 10,000 randomizations and the seed 1234567.
+176c132
+< - If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in Gerber and Green discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
+---
+> In checks #2 and #3, p-values below 0.10 will be considered evidence of asymmetrical attrition.
+178c134
+< ## Choice of covariates
+---
+> If any of those checks raises a red flag, and if the PAP has not specified methods for addressing attrition bias, we will follow these procedures:
+180c136
+< Ordinarily our choice of covariates for adjustment will have been specified in the PAP.
+---
+> 1. Rely on second-round sampling of nonrespondents, combined with worst-case bounds,[^4] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
+182c138
+< With M and N as defined above, we will include no more than $M / 20$ covariates in regressions with treatment-covariate interactions, and no more than $N / 20$ covariates in regressions without such interactions.[^5]
+---
+> 2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme-value (Manski-type) bounds. (If the outcome has unbounded range, report extreme-value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
+184c140
+< In general, covariates should be measured before randomization. To make any exceptions to this rule, we need to have a convincing argument that either (1) the variable is a measure of pre-randomization conditions, and treatment assignment had no effect on measurement error, or (2) although the variable is wholly or partly a measure of post-randomization conditions, it could not have been affected by treatment assignment. (Rainfall on Election Day would probably satisfy #2.)
+---
+> [^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Covariate adjustment."
+186c142
+< Occasionally a new source of data on baseline characteristics becomes available after random assignment (e.g., when political campaigns join forces and merge their datasets). To decide which (if any) variables derived from the new data source should be included as covariates, we will consult a "blind jury"" of collaborators or colleagues. The jury should not see treatment effect estimates or any information that might suggest whether inclusion of a covariate would make the estimated effects bigger or smaller. Instead, they should be asked which covariates they would have included if the new data source had been available before the PAP was registered.
+---
+> [^2]: @Wooldridge2010 [p. 62].
+188c144
+< Covariates should generally be chosen on the basis of their expected ability to help predict outcomes, regardless of whether they appear well-balanced or imbalanced across treatment arms.[^6] But there may be occasions when the covariate list specified in the PAP omitted a potentially important covariate (due to either an oversight or the need to keep the list short when N is small) with a nontrivial imbalance. Protection against ex post bias (conditional on the observed imbalance) is then a legitimate concern.[^7] However, if observed imbalances are allowed to influence the choice of covariates,[^8] the following guidelines should be observed:
+---
+> [^3]: Note that in the case of a two-arm trial, the Studentized permutation test does not compare the estimated treatment effect with its empirical distribution, but instead compares a heteroskedasticity-robust t-statistic with its empirical distribution. For background and motivation, see @Romano2009 and @Chung2013.
+190c146
+< 1. If possible, the balance checks and decisions about adjustment should be finalized before we see unblinded outcome data.
+---
+> [^4]: Aronow et al. (2015).
+192c148
+< 2. The _direction_ of the observed imbalance (e.g., whether the treatment group or the control group appears more advantaged at baseline) should not be allowed to influence decisions about adjustment. We will either pre-specify criteria that depend on the size of the imbalance but not its direction, or consult a "blind jury" that will not see the direction of imbalance or any other information that suggests how the adjustment would affect the point estimates.
+---
+> # Outliers
+194c150
+< 3. The estimator specified in the PAP will always be reported and labeled as such, even if alternative estimates are also reported. See also "Robustness checks" below.
+---
+> Except as specified in the PAP, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
+196c152
+< [^5]: The purpose of this rule of thumb is to make it unlikely that adjustment leads to substantially worse precision or appreciable finite-sample bias. If time allows, simulations (using baseline data or prior studies) could provide additional guidance during the development of a PAP.
+---
+> # When randomization doesn’t go according to plan
+198c154
+< [^6]: As Bruhn and McKenzie [-@Bruhn2009, p. 226] emphasize, "greater power is achieved by always adjusting for a covariate that is highly correlated with the outcome of interest, regardless of its distribution between groups."
+---
+> ## Learning of a restricted randomization
+200c156
+< [^7]: See Lin [-@Lin2012b; -@Lin2013, p.308]  and references therein for discussion of this point.
+---
+> Sometimes we may learn or realize ex post that certain randomizations were disallowed. For example, an NGO partner may reveal that they would have canceled the RCT if a particular unit had not been assigned to the treatment group. Or, we may realize that we implicitly did a restricted randomization, since we checked covariate balance prior to implementing the treatment assignment, and if there had been a large enough imbalance, we would have re-randomized. In these situations, we will use randomization inference, excluding the disallowed randomizations.
+202c158
+< [^8]: Commonly used standard error estimators assume that we would adjust for the same set of covariates regardless of which units were assigned to which treatment arm. Letting observed imbalances influence the choice of covariates violates this assumption. In the scenario studied by @Permutt1990, the result is that the significance test for the treatment effect has a true Type I error probability that is lower than the nominal level—i.e., the test is conservative.
+---
+> ## Duplicate records in the dataset used for randomization
+204c160
+< ## Missing covariate values
+---
+> After treatment has begun, we may learn that there were duplicate records in the dataset that was used to randomly assign subjects. This raises the problems that (1) a subject could be assigned to more than one arm, and (2) subjects with duplicate records had a higher probability of assignment to treatment than subjects with unique records.
+206c162
+< Observations with missing covariate values will be included in the analysis as long as the outcome measure and treatment assignment are non-missing. Ordinarily, methods for handling missing values will have been specified in the PAP. If not, we will use the following approach:
+---
+> How we handle this situation depends on two questions.
+208c164
+< 1. If no more than 10% of the covariate's values are missing, recode the missing values to the overall mean. (Do not use arm-specific means.)
+---
+> Question 1: Were the multiple assignments of duplicate records made simultaneously, or can they be ordered in time?
+210c166
+< 2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant. If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
+---
+> For example, when applicants for a social program are randomly assigned as their applications are processed, random assignment may continue for months or years, and in unusual cases, a persistent applicant who was originally assigned to the control group may later succeed in getting assigned to treatment under a duplicate record. In that case, the existence and number of duplicate records may be affected by the initial assignment.
+212c168
+< ## Robustness Checks
+---
+> If the assignments can be ordered in time, we will treat the initial assignment as the correct one, and any noncompliance with the initial assignment will be handled the same way as for subjects who did not have duplicate records.
+214c170
+< Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary, and if alternative estimates differ substantially, we will note the lack of robustness and be appropriately restrained in our conclusions.
+---
+> If the assignments were made simultaneously, Question 2 should be considered.
+216c172
+< For binary or count-data outcomes, some referees prefer estimates based on nonlinear models such as logit, probit, or Poisson regression. Although we disagree with this preference (the robustness of least squares adjustment in RCTs is supported by both theory and simulation evidence),[^9] we will provide supplementary estimates derived from nonlinear models (using marginal effects calculations) if requested by referees. We prefer logits to probits because adjustment based on the probit MLE is not misspecification-robust.[^10]
+---
+> Question 2: Is it reasonable to say that if a subject was assigned to more than one arm, one of her assignments “trumps” the other(s)?
+218c174
+< [^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 or @Judkins2014.
+---
+> For example, in a two-arm trial where the treatment is an attempted phone call and the control condition is simply no attempt (without any active steps to prohibit a phone call), it seems reasonable to decide that treatment trumps control—i.e., assigning a subject with duplicate records to both conditions is like assigning her to treatment. In contrast, in a treatment/placebo design where the treatment and placebo are attempted conversations about two different topics, we would hesitate to assume that treatment trumps placebo. And in a three-arm trial with two active treatments and a control condition, it might be reasonable to assume that one treatment trumps the other if the former includes all of the latter’s activities and more, but otherwise we would hesitate to make that assumption.
+220c176,220
+< [^10]: @Freedman2008; @Firth1998. Lin gave an [informal discussion in a blog comment](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
+---
+> If the trump assumption can be reasonably made, then in the analysis, we will take the following steps: 
+> 
+> 1. Deduplicate the records.
+> 
+> 2. Use the trump assumption to reclassify any subject who was assigned to more than one arm.
+> 
+> 3. Calculate each subject’s probabilities of assignment to each arm, where "assignment" means the unique classification from step 2. These probabilities will depend on the number of records for the subject in the original dataset.
+> 
+> 4. Use inverse probability-of-assignment weighting (IPW) to estimate treatment effects.
+> 
+> If the trump assumption cannot be reasonably made, then we will replace step 2 with a step that excludes from the analysis any subject who was assigned to more than one arm. We will then check whether steps 3 and 4 still need to be performed. (For example, in a two-arm Bernoulli-randomized trial with intended probabilities of assignment of 2 / 3 to treatment and 1 / 3 to control, a subject with two records has probability 4 / 9 of two assignments to treatment, 4 / 9 of one assignment to treatment and one to control, and 1 / 9 of two assignments to control. Conditional on remaining in the analysis after we exclude subjects who were assigned to both treatment and control, she has probability 4 / 5 of assignment to treatment.)
+> 
+> ### Example: Fundraising Experiment
+> 
+> Suppose a fundraising experiment randomly assigns 500 of 1,000 names to a treatment that consists of an invitation to contribute to a charitable cause. However, it is later discovered that 600 names appear once and 200 names appear twice. Before the invitations are mailed, duplicate invitations are discarded, so that no one receives more than one invitation.
+> 
+> In this case, the experimental procedure justifies the trump assumption. Names that are assigned once or twice are in treatment, the remainder are in control. It's easy enough in this example to calculate analytic probabilities (0.5 for those who appear once, 0.75 for those who appear twice).  However, in some situations, simulating the exact prodecure is the best way to determine probabilities (it can also be a good way to check your work!).  Here is a short simulation in r that confirms the analytic solution.
+> 
+> ```{r, cache=TRUE}
+> # Load randomizr for complete_ra()
+> library(randomizr)
+> 
+> # Make a list of 1000 names. 200 names appear twice
+> name_ids <- c(paste0("name_", sprintf("%03d", 1:600)),
+>               paste0("name_", sprintf("%03d", 601:800)),
+>               paste0("name_", sprintf("%03d", 601:800)))
+> 
+> # Conduct simulation
+> sims <- 10000
+> Z_mat <- matrix(NA, nrow = 800, ncol = sims)
+> for(i in 1:sims){
+>   # Conduct assignment among the 1000 names
+>   Z_1000 <- complete_ra(1000, 500)
+>   # Check if names were ever assigned
+>   Z_800 <- as.numeric(tapply(Z_1000, name_ids, sum) > 0)
+>   # Save output
+>   Z_mat[,i] <- Z_800
+> }
+> 
+> # Calculate probabilities of assignment
+> probabilities <- rowMeans(Z_mat)
+> plot(probabilities, ylim=c(0,1))
+> ```
+> 
+> The plot confirms the analytic solution. The first 600 names have probability of assignment 0.5, and names 601 through 800 (the duplicates) have probability 0.75.
