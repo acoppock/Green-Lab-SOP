@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.3b: July 7, 2015'
+date: 'Version 0.3c: July 8, 2015'
 output:
   pdf_document:
     toc: yes
@@ -15,15 +15,15 @@ This standard operating procedures (SOP) document describes the default practice
 
 This is a living document. If ever you encounter an experimental situation not covered herein, please email or submit an issue request on GitHub. Additionally, when referencing this document, please be sure to note the version.
 
-# Reliance on Permutation Methods
+# Hypothesis testing
 
 For significance tests and p-values, we will either report Studentized permutation tests [@Chung2013] or use permutation methods to check the accuracy of asymptotic approximations.
 
 For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
 
-# Covariate adjustment
+# Using covariates in analysis
 
-## Default estimation methods
+## Default methods for estimating average treatment effects
 
 Estimation methods for the primary analysis will normally have been specified in the PAP. For reference in what follows, here we describe our default methods for a unit-randomized experiment with N subjects. Let $M < N$ denote the largest integer such that at least $M$ subjects are assigned to each arm.
 
@@ -33,7 +33,7 @@ Estimation methods for the primary analysis will normally have been specified in
 
 - If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in Gerber and Green discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
 
-## Choice of covariates
+## Choice of covariates for regression adjustment
 
 Ordinarily our choice of covariates for adjustment will have been specified in the PAP.
 
@@ -61,13 +61,13 @@ Covariates should generally be chosen on the basis of their expected ability to 
 
 ## Missing covariate values
 
-Observations with missing covariate values will be included in the analysis as long as the outcome measure and treatment assignment are non-missing. Ordinarily, methods for handling missing values will have been specified in the PAP. If not, we will use the following approach:
+Observations with missing covariate values will be included in the regressions that estimate average treatment effects, as long as the outcome measure and treatment assignment are non-missing. Ordinarily, methods for handling missing values will have been specified in the PAP. If not, we will use the following approach:
 
 1. If no more than 10% of the covariate's values are missing, recode the missing values to the overall mean. (Do not use arm-specific means.)
 
 2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant. If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
 
-## Robustness Checks
+## Unadjusted estimates, alternative regression specifications, and nonlinear models
 
 Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary, and if alternative estimates differ substantially, we will note the lack of robustness and be appropriately restrained in our conclusions.
 
@@ -77,7 +77,7 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 
 [^10]: @Freedman2008; @Firth1998. Lin gave an [informal discussion in a blog comment](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
 
-# Estimation when subjects are assigned with varying treatment probabilities
+## Analysis of block randomized experiments with treatment probabilities that vary by block
 
 Sometimes—intentionally or not—subjects are assigned to treatment with (known) probabilities that vary from subject to subject. For example, subjects in a blocked design may be assigned with probabilities that are higher for some blocks than others.  Except in extreme cases (defined below), IPW will be used to estimate the average treatment effect when subjects’ probability of treatment varies.  See @Gerber2012, chapters 3-4 for examples of this estimator.
 
@@ -87,7 +87,7 @@ Extreme cases in which the least-squares dummy variable estimator (LSDV) will be
 
 In experiments that encounter noncompliance with assigned treatments, our analysis will include a test of the hypothesis that the average intent-to-treat effect is zero.
 
-## When some subjects receive "partial treatment"
+## Estimating treatment effects when some subjects receive "partial treatment"
 
 [@Gerber2012, pp. 164-165] discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. Unless variation in treatment dosage is randomized, we will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165].
 
@@ -219,7 +219,7 @@ plot(probabilities, ylim=c(0,1))
 
 The plot confirms the analytic solution. The first 600 names have probability of assignment 0.5, and names 601 through 800 (the duplicates) have probability 0.75.
 
-# Other Transparency Issues
+# Other transparency issues
 
 ## Canceled, stopped, or "failed" RCTs
 
@@ -229,9 +229,9 @@ In such cases, we will make publicly available a summary of the design and imple
 
 [^11]: For related discussion, see @Greenberg2014.
 
-## Pre-specified analyses that don’t appear in the published paper
+## Pre-specified analyses that don’t appear in the published article
 
-We will make all such analyses available in a document that will be referenced in the paper.
+We will make all such analyses available in a document that will be referenced in the article.
 
 # Issues specific to voter turnout experiments
 
