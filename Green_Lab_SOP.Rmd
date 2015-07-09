@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.3c: July 8, 2015'
+date: 'Version 0.3d: July 9, 2015'
 output:
   pdf_document:
     toc: yes
@@ -153,7 +153,11 @@ Except as specified in the PAP, we will not delete or edit outlying values merel
 
 ## Learning of a restricted randomization
 
-Sometimes we may learn or realize ex post that certain randomizations were disallowed. For example, an NGO partner may reveal that they would have canceled the RCT if a particular unit had not been assigned to the treatment group. Or, we may realize that we implicitly did a restricted randomization, since we checked covariate balance prior to implementing the treatment assignment, and if there had been a large enough imbalance, we would have re-randomized. In these situations, we will use randomization inference, excluding the disallowed randomizations.
+Sometimes we may learn or realize ex post that certain randomizations were disallowed. For example, an NGO partner may reveal that they would have canceled the RCT if a particular unit had not been assigned to the treatment group. Or, we may realize that we implicitly did a restricted randomization, since we checked covariate balance prior to implementing the treatment assignment, and if there had been a large enough imbalance, we would have re-randomized.
+
+If we can reconstruct the set of admissible randomizations, we will analyze the data as suggested in @Gerber2012 (Box 4.5, p. 121): First, if the treatment and control groups are of different sizes, we will use inverse probability-of-assignment weights to estimate the average treatment effect (estimating the weights by simulating a large number of admissible randomizations and tabulating the fraction of randomizations that assign each subject to treatment or control). Second, we will use randomization inference (excluding the disallowed randomizations) to estimate p-values.
+
+If we cannot reconstruct the set of admissible randomizations (i.e., the restriction rule is unknown), we will use randomization inference without excluding the implicitly disallowed randomizations. This results in conservative inferences (@Morgan2012, p. 1264).
 
 ## Duplicate records in the dataset used for randomization
 
