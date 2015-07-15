@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.3d: July 9, 2015'
+date: 'Version 0.3e: July 15, 2015'
 output:
   pdf_document:
     toc: yes
@@ -11,7 +11,7 @@ output:
 bibliography: SOP.bib
 ---
 \pagebreak
-This standard operating procedures (SOP) document describes the default practices of the experimental lab group led by Donald P. Green at Columbia University. These defaults apply to decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs.
+This standard operating procedures (SOP) document describes the default practices of the experimental lab group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
 This is a living document. If ever you encounter an experimental situation not covered herein, please email or submit an issue request on GitHub. Additionally, when referencing this document, please be sure to note the version.
 
@@ -76,6 +76,16 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 [^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 or @Judkins2014.
 
 [^10]: @Freedman2008; @Firth1998. Lin gave an [informal discussion in a blog comment](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
+
+## Covariate imbalance and the detection of administrative errors
+
+We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of the F-statistic for the hypothesis that all the coefficients on the covariates are zero (@Gerber2012, p. 107). If the experiment is block-randomized with treatment probabilities that vary by block, we will include dummy variables for the varying treatment probabilities in both the restricted and unrestricted regression models used to compute the F-statistic.
+
+We will use randomization inference (using at least 10,000 randomizations and the random number seed 1234567) to calculate the p-value associated with the F-statistic.
+
+In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates, calculation of the likelihood-ratio test statistic for the hypothesis that all the coefficients on the covariates are zero, and randomization inference to calculate the p-value.
+
+A p-value of 0.01 or lower should prompt a thorough review of the random assignment procedure and any possible data-handling mistakes. If the review finds no errors, we will report the imbalance test, proceed on the assumption that the imbalance is due to chance, and report estimates with and without covariate adjustment.
 
 ## Analysis of block randomized experiments with treatment probabilities that vary by block
 
@@ -155,9 +165,11 @@ Except as specified in the PAP, we will not delete or edit outlying values merel
 
 Sometimes we may learn or realize ex post that certain randomizations were disallowed. For example, an NGO partner may reveal that they would have canceled the RCT if a particular unit had not been assigned to the treatment group. Or, we may realize that we implicitly did a restricted randomization, since we checked covariate balance prior to implementing the treatment assignment, and if there had been a large enough imbalance, we would have re-randomized.
 
+We will reveal such implicit restrictions in our research reports and articles.
+
 If we can reconstruct the set of admissible randomizations, we will analyze the data as suggested in @Gerber2012 (Box 4.5, p. 121): First, if the treatment and control groups are of different sizes, we will use inverse probability-of-assignment weights to estimate the average treatment effect (estimating the weights by simulating a large number of admissible randomizations and tabulating the fraction of randomizations that assign each subject to treatment or control). Second, we will use randomization inference (excluding the disallowed randomizations) to estimate p-values.
 
-If we cannot reconstruct the set of admissible randomizations (i.e., the restriction rule is unknown), we will use randomization inference without excluding the implicitly disallowed randomizations. This results in conservative inferences (@Morgan2012, p. 1264).
+(As @Morgan2012 [p. 1264] explain, when randomizations with large covariate imbalances are disallowed, traditional methods of analysis that do not take the restriction into account will tend to result in conservative inferences.)
 
 ## Duplicate records in the dataset used for randomization
 
