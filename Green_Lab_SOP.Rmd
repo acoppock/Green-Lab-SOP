@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.3e: July 15, 2015'
+date: 'Version 0.3f: July 15, 2015'
 output:
   pdf_document:
     toc: yes
@@ -13,7 +13,7 @@ bibliography: SOP.bib
 \pagebreak
 This standard operating procedures (SOP) document describes the default practices of the experimental lab group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
-This is a living document. If ever you encounter an experimental situation not covered herein, please email or submit an issue request on GitHub. Additionally, when referencing this document, please be sure to note the version.
+This is a living document. To suggest changes or additions, please email or submit an issue request on GitHub. Also, when referencing this document, please be sure to note the version.
 
 # Hypothesis testing
 
@@ -160,6 +160,16 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 Except as specified in the PAP, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
 
 # When randomization doesn’t go according to plan
+
+## Verifying that randomization was implemented as planned
+
+We will have at least two team members check each computer program used to randomly assign treatment, and we will make these programs publicly available. In all such programs, we will include a seed value for the random number generator, so that the resulting assignments can be replicated and verified.
+
+See the section "Covariate imbalance and the detection of administrative errors" for a description of the statistical test we will use to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In addition to reporting the result of this test, we will follow the reporting guidelines in the "Allocation Method" section of @Gerber2014 (Appendix 1, part C).
+
+[to do: describe "external verification that random assignment was implemented as planned"]
+
+In the event that these checks reveal any errors, we will report the errors and take them into account in any analyses we report. We will add more specific guidance and examples to our SOP as we learn from our own and/or other researchers' experiences.
 
 ## Learning of a restricted randomization
 
