@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.3f: July 15, 2015'
+date: 'Version 0.4: July 23, 2015'
 output:
   pdf_document:
     toc: yes
@@ -11,15 +11,44 @@ output:
 bibliography: SOP.bib
 ---
 \pagebreak
-This standard operating procedures (SOP) document describes the default practices of the experimental lab group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
+This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
-This is a living document. To suggest changes or additions, please email or submit an issue request on GitHub. Also, when referencing this document, please be sure to note the version.
+This is a living document. To suggest changes or additions, please feel free to e-mail us or submit an issue request on GitHub. Also, when referencing this document, please be sure to note the version.
+
+We thank (without implicating) Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Anselm Rink, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments.
+
+# Checks on data preparation and study implementation
+
+We will have at least two team members involved in all raw data collection efforts (including, but not limited to, the gathering of data from survey organizations and government agencies). We will obtain Institutional Review Board approval for these team members to have access to the raw data.
+
+If we use computer programs to construct variables for analysis, we will make these programs publicly available.
+
+The following types of checks should be performed and documented before analyses are publicly disseminated or submitted for publication:
+
+- Verification that treatment occurred. Supportive evidence can include receipts for expenses associated with treatment, spot checks by more than one observer in the field, geotagged photographs, and/or manipulation checks (statistical evidence that random assignment created a treatment contrast in the intended direction—see, e.g., @Gerber2012, Box 10.3, p. 335).
+
+- Verification that outcome data were gathered (e.g., via receipts, spot checks, and/or having a second team member independently gather data for a sample of cases).
+
+- Examination of the distributions and missingness rates of all variables used in the analysis and their precursors in the raw data files. These variables should be checked both for plausibility and for consistency across the stages of data processing. The checks should normally include not only univariate summaries, but also cross-tabulations of related variables.
+
+- Other checks described under "Covariate imbalance and the detection of administrative errors" and "Verifying that randomization was implemented as planned".
 
 # Hypothesis testing
+
+## One-tailed or two-tailed test?
+
+We will report two-tailed hypothesis tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests – i.e. to reject the null if the result was
+in the bottom 1 percent of the distribution or in the top 4 percent, or the bottom 0.5 and the top 4.5 percent, and so
+on. These asymmetric tests would gain much of the statistical power from one-sided tests, but still be set up
+statistically to reject the null in the presence of very large, negative results."]
+
+## Use of permutation methods
 
 For significance tests and p-values, we will either report Studentized permutation tests [@Chung2013] or use permutation methods to check the accuracy of asymptotic approximations.
 
 For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
+
+For all permutation methods, we will use at least 10,000 randomizations and the random number seed 1234567.
 
 # Using covariates in analysis
 
@@ -41,7 +70,7 @@ With M and N as defined above, we will include no more than $M / 20$ covariates 
 
 In general, covariates should be measured before randomization. To make any exceptions to this rule, we need to have a convincing argument that either (1) the variable is a measure of pre-randomization conditions, and treatment assignment had no effect on measurement error, or (2) although the variable is wholly or partly a measure of post-randomization conditions, it could not have been affected by treatment assignment. (Rainfall on Election Day would probably satisfy #2.)
 
-Occasionally a new source of data on baseline characteristics becomes available after random assignment (e.g., when political campaigns join forces and merge their datasets). To decide which (if any) variables derived from the new data source should be included as covariates, we will consult a "blind jury"" of collaborators or colleagues. The jury should not see treatment effect estimates or any information that might suggest whether inclusion of a covariate would make the estimated effects bigger or smaller. Instead, they should be asked which covariates they would have included if the new data source had been available before the PAP was registered.
+Occasionally a new source of data on baseline characteristics becomes available after random assignment (e.g., when political campaigns join forces and merge their datasets). To decide which (if any) variables derived from the new data source should be included as covariates, we will consult a "blind jury" of collaborators or colleagues. The jury should not see treatment effect estimates or any information that might suggest whether inclusion of a covariate would make the estimated effects bigger or smaller. Instead, they should be asked which covariates they would have included if the new data source had been available before the PAP was registered.
 
 Covariates should generally be chosen on the basis of their expected ability to help predict outcomes, regardless of whether they appear well-balanced or imbalanced across treatment arms.[^6] But there may be occasions when the covariate list specified in the PAP omitted a potentially important covariate (due to either an oversight or the need to keep the list short when N is small) with a nontrivial imbalance. Protection against ex post bias (conditional on the observed imbalance) is then a legitimate concern.[^7] However, if observed imbalances are allowed to influence the choice of covariates,[^8] the following guidelines should be observed:
 
@@ -49,7 +78,7 @@ Covariates should generally be chosen on the basis of their expected ability to 
 
 2. The _direction_ of the observed imbalance (e.g., whether the treatment group or the control group appears more advantaged at baseline) should not be allowed to influence decisions about adjustment. We will either pre-specify criteria that depend on the size of the imbalance but not its direction, or consult a "blind jury" that will not see the direction of imbalance or any other information that suggests how the adjustment would affect the point estimates.
 
-3. The estimator specified in the PAP will always be reported and labeled as such, even if alternative estimates are also reported. See also "Robustness checks" below.
+3. The estimator specified in the PAP will always be reported and labeled as such, even if alternative estimates are also reported. See also "Unadjusted estimates, alternative regression specifications, and nonlinear models" below.
 
 [^5]: The purpose of this rule of thumb is to make it unlikely that adjustment leads to substantially worse precision or appreciable finite-sample bias. If time allows, simulations (using baseline data or prior studies) could provide additional guidance during the development of a PAP.
 
@@ -65,7 +94,7 @@ Observations with missing covariate values will be included in the regressions t
 
 1. If no more than 10% of the covariate's values are missing, recode the missing values to the overall mean. (Do not use arm-specific means.)
 
-2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant. If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
+2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant, such as 0.^[This method is described in @Gerber2012, p. 241.] If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
 
 ## Unadjusted estimates, alternative regression specifications, and nonlinear models
 
@@ -75,13 +104,13 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 
 [^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 or @Judkins2014.
 
-[^10]: @Freedman2008; @Firth1998. Lin gave an [informal discussion in a blog comment](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
+[^10]: @Freedman2008; @Firth1998. Lin gave an informal discussion in a [comment on the _Mostly Harmless Econometrics_ blog](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
 
 ## Covariate imbalance and the detection of administrative errors
 
 We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of the F-statistic for the hypothesis that all the coefficients on the covariates are zero (@Gerber2012, p. 107). If the experiment is block-randomized with treatment probabilities that vary by block, we will include dummy variables for the varying treatment probabilities in both the restricted and unrestricted regression models used to compute the F-statistic.
 
-We will use randomization inference (using at least 10,000 randomizations and the random number seed 1234567) to calculate the p-value associated with the F-statistic.
+We will use a permutation test (randomization inference) to calculate the p-value associated with the F-statistic.
 
 In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates, calculation of the likelihood-ratio test statistic for the hypothesis that all the coefficients on the covariates are zero, and randomization inference to calculate the p-value.
 
@@ -89,9 +118,27 @@ A p-value of 0.01 or lower should prompt a thorough review of the random assignm
 
 ## Analysis of block randomized experiments with treatment probabilities that vary by block
 
-Sometimes—intentionally or not—subjects are assigned to treatment with (known) probabilities that vary from subject to subject. For example, subjects in a blocked design may be assigned with probabilities that are higher for some blocks than others.  Except in extreme cases (defined below), IPW will be used to estimate the average treatment effect when subjects’ probability of treatment varies.  See @Gerber2012, chapters 3-4 for examples of this estimator.
+### Estimating treatment effects
 
-Extreme cases in which the least-squares dummy variable estimator (LSDV) will be used instead of the IPW estimator are those in which a small number of extremely large blocks are assigned to treatment with very skewed probabilities.  For example, imagine a block-randomized experiment with two blocks: 500 of 1000 subjects in Block 1 are assigned to treatment, while 5 of 100,000 in Block 2 are assigned to treatment.  IPW would place inordinate weight on the second, relatively uninformative block. To avoid these cases, LSDV would be used if the following trump condition is met: the IPW weight placed on any one block is more than 100 times as large as the LSDV weight.
+When treatment assignment probabilities vary by block, we will use weighted least squares regression with inverse probability-of-assignment weights (IPW) to estimate the average treatment effect (ATE), except in extreme cases (defined below).  See @Gerber2012, section 4.5 for discussion of the IPW method.
+
+An alternative approach, sometimes called the least-squares dummy variable (LSDV) method, is to run an OLS regression of the outcome on treatment, block indicators, and covariates. The estimand for the LSDV method is a weighted ATE, giving each block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in the block and $P_j$ is their probability of assignment to treatment (@Angrist2009, p. 75; @Gerber2012, p. 119). In contrast, the estimand for the IPW method is the unweighted ATE, which gives block $j$ a total weight proportional to $N_j$. We will use IPW except in the extreme case where there is at least one block $j$ such that
+
+$$ \frac{N_j}{\sum_j N_j} > 20 \, \frac{N_j P_j (1-P_j)}{\sum_j N_j P_j (1-P_j)}. $$
+
+In that case, we will use LSDV and we will explain to readers that we pre-specified a weighted ATE as our estimand in an attempt to improve precision. For background, see @Angrist2009 (p. 76, footnote 23) and @Gerber2012 (pp. 119-120).
+
+For example, imagine a block-randomized experiment with two blocks: 500 of 1,000 subjects in block 1 are assigned to treatment, while 5 of 100,000 in block 2 are assigned to treatment.  The IPW estimand (the unweighted ATE) places a total weight of $N_2 / (N_1 + N_2) = 99.01\%$ on the second, relatively uninformative block, while the LSDV estimand gives the same block a total weight of $N_2 P_2 (1 - P_2) / [N_1 P_1 (1 - P_1) + N_2 P_2 (1 - P_2)] = 1.96\%$. Thus, block 2 is weighted over 50 times more heavily by IPW than by LSDV. In this situation, we would use LSDV instead of IPW.
+
+### Presentation of statistics describing covariate balance
+
+For the formal test for covariate balance, see the section above on "Covariate imbalance and the detection of administrative errors".
+
+For tables or figures describing covariate balance, we will follow the advice in @Gerber2012, pp. 120-121, with the following amendment to their footnote 19: If LSDV is the primary treatment effect estimator, then instead of using the weights in their equation (4.12), give each treatment group observation a weight proportional to $1 - P_j$ and each control group observation a weight proportional to $P_j$. (This results in a weighted treatment group mean and weighted control group mean that give block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, which matches the LSDV estimand.)
+
+### Presentation of statistics describing overall baseline characteristics of the study sample (not separated by treatment arm)
+
+If the primary treatment effect estimator is IPW, summary statistics on overall characteristics of the sample should be unweighted, since the IPW estimand is the unweighted ATE. If LSDV is the primary treatment effect estimator, the summary statistics should give each observation a weight proportional to $P_j (1 - P_j)$, since this gives block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, which matches the LSDV estimand.
 
 # Noncompliance
 
@@ -99,7 +146,7 @@ In experiments that encounter noncompliance with assigned treatments, our analys
 
 ## Estimating treatment effects when some subjects receive "partial treatment"
 
-[@Gerber2012, pp. 164-165] discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. Unless variation in treatment dosage is randomized, we will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165].
+@Gerber2012 (pp. 164-165) discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. Unless variation in treatment dosage is randomized, we will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165].
 
 ## Treatment/placebo designs
 
@@ -109,7 +156,7 @@ In a treatment/placebo design, subjects are randomly assigned to be encouraged t
 
 2. Comparison of compliance rates across arms: We will perform a two-tailed unequal-variances t-test of the hypothesis that treatment assignment does not affect the compliance rate.
 
-3. Comparison of compliers’ baseline characteristics across arms: Using compliers only, we will estimate a linear regression of the treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test of the hypothesis that all coefficients on the covariates are zero.
+3. Comparison of compliers’ baseline characteristics across arms: Using compliers only, we will estimate a linear regression of the treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero.
 
 4. Comparison of noncompliers' outcomes across arms: Using noncompliers only, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment assignment does not affect the average outcome.
 
@@ -125,7 +172,7 @@ In Nickerson's rolling protocol design [@Nickerson2005], researchers create a ra
 
 2. The decision to stop treatment attempts must be based solely on resources, not on characteristics of the subjects or clusters.
 
-3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.10 will be considered evidence of noncomparability.
+3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.10 will be considered evidence of noncomparability.
 
 If these checks cast doubt on the comparability of treatment and control groups, we will not move any unattempted treatment group members into the control group.
 
@@ -135,21 +182,19 @@ We will routinely perform three types of checks for asymmetrical attrition:[^1]
 
 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
 
-2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test[^2] of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.[^3] We will use at least 10,000 randomizations, and our seed for the random number generator will be 1234567.
+2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.[^3]
 
-3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test, using at least 10,000 randomizations and the seed 1234567.
+3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test.
 
 In checks #2 and #3, p-values below 0.10 will be considered evidence of asymmetrical attrition.
 
 If any of those checks raises a red flag, and if the PAP has not specified methods for addressing attrition bias, we will follow these procedures:
 
-1. Rely on second-round sampling of nonrespondents, combined with worst-case bounds,[^4] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
+1. Rely on second-round sampling of nonrespondents, combined with extreme value bounds,[^4] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
 
-2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme-value (Manski-type) bounds. (If the outcome has unbounded range, report extreme-value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
+2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds (@Gerber2012, pp. 226-227). (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
 
-[^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Covariate adjustment."
-
-[^2]: @Wooldridge2010 [p. 62].
+[^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Missing covariate values".
 
 [^3]: Note that in the case of a two-arm trial, the Studentized permutation test does not compare the estimated treatment effect with its empirical distribution, but instead compares a heteroskedasticity-robust t-statistic with its empirical distribution. For background and motivation, see @Romano2009 and @Chung2013.
 
@@ -157,17 +202,15 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 
 # Outliers
 
-Except as specified in the PAP, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
+Except as specified in the PAP or as part of a supplemental robustness check, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
 
 # When randomization doesn’t go according to plan
 
 ## Verifying that randomization was implemented as planned
 
-We will have at least two team members check each computer program used to randomly assign treatment, and we will make these programs publicly available. In all such programs, we will include a seed value for the random number generator, so that the resulting assignments can be replicated and verified.
+We will have at least two team members check each computer program used to randomly assign treatment, and we will make these programs publicly available. In all such programs, we will use the seed value 1234567 for the random number generator, so that the resulting assignments can be replicated and verified.
 
 See the section "Covariate imbalance and the detection of administrative errors" for a description of the statistical test we will use to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In addition to reporting the result of this test, we will follow the reporting guidelines in the "Allocation Method" section of @Gerber2014 (Appendix 1, part C).
-
-[to do: describe "external verification that random assignment was implemented as planned"]
 
 In the event that these checks reveal any errors, we will report the errors and take them into account in any analyses we report. We will add more specific guidance and examples to our SOP as we learn from our own and/or other researchers' experiences.
 
@@ -177,9 +220,9 @@ Sometimes we may learn or realize ex post that certain randomizations were disal
 
 We will reveal such implicit restrictions in our research reports and articles.
 
-If we can reconstruct the set of admissible randomizations, we will analyze the data as suggested in @Gerber2012 (Box 4.5, p. 121): First, if the treatment and control groups are of different sizes, we will use inverse probability-of-assignment weights to estimate the average treatment effect (estimating the weights by simulating a large number of admissible randomizations and tabulating the fraction of randomizations that assign each subject to treatment or control). Second, we will use randomization inference (excluding the disallowed randomizations) to estimate p-values.
+If we can formalize the implicit restriction and reconstruct the set of admissible randomizations, we will analyze the data as suggested in @Gerber2012 (Box 4.5, p. 121): First, if the treatment and control groups are of different sizes, we will use inverse probability-of-assignment weights to estimate the average treatment effect (estimating the weights by simulating a large number of admissible randomizations and tabulating the fraction of randomizations that assign each subject to treatment or control). Second, we will use randomization inference (excluding the disallowed randomizations) to estimate p-values.
 
-(As @Morgan2012 [p. 1264] explain, when randomizations with large covariate imbalances are disallowed, traditional methods of analysis that do not take the restriction into account will tend to result in conservative inferences.)
+If we cannot formalize the implicit restriction, we will keep the pre-specified analysis strategy but will note the issue for readers (e.g., by saying that we checked for covariate balance before implementing treatment assignment but did not have a fixed balance criterion in mind).^[As @Morgan2012 (p. 1264) explain, when randomizations with large covariate imbalances are disallowed, traditional methods of analysis that do not take the restriction into account will tend to result in conservative inferences.]
 
 ## Duplicate records in the dataset used for randomization
 
@@ -255,9 +298,9 @@ In such cases, we will make publicly available a summary of the design and imple
 
 [^11]: For related discussion, see @Greenberg2014.
 
-## Pre-specified analyses that don’t appear in the published article
+## Differences between the pre-specified analyses and those that appear in the article
 
-We will make all such analyses available in a document that will be referenced in the article.
+The published article will reference the PAP. If the article contains analyses that deviate from the PAP, it will make clear that these analyses were not pre-specified. Conversely, if the article omits any pre-specified analyses, it will give a brief description of them and they will be made available in a document that is referenced in the article.
 
 # Issues specific to voter turnout experiments
 
