@@ -3,11 +3,11 @@ title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
 date: 'Version 0.4: July 23, 2015'
 output:
-  pdf_document:
-    toc: yes
-  html_document:
-    theme: cosmo
-    toc: yes
+pdf_document:
+toc: yes
+html_document:
+theme: cosmo
+toc: yes
 bibliography: SOP.bib
 ---
 \pagebreak
@@ -49,6 +49,52 @@ For significance tests and p-values, we will either report Studentized permutati
 For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
 
 For all permutation methods, we will use at least 10,000 randomizations and the random number seed 1234567.
+
+## Example: Studentized Permuation Test
+
+```{r}
+suppressMessages({
+  library(randomizr)
+  library(sandwich)
+  library(lmtest)
+})
+
+set.seed(1234567)
+
+N <- 100
+
+# Create potential outcomes
+Y0 <- rnorm(N)
+Y1 <- Y0 + 0.25
+
+# Conduct random assignment
+Z <- complete_ra(N, m = 50)
+Y_obs <- Y1*Z + Y0*(1-Z)
+
+# Conduct Estimation
+fit <- lm(Y_obs ~ Z)
+
+# Obtain Heteroskedasticty-robust t-statisic
+t_obs <- coeftest(fit, vcov = vcovHC(fit, type = "HC2"))[2,3]
+
+# Conduct simulation
+sims <- 10000
+t_sims <- rep(NA, sims)
+
+for(i in 1:sims){
+  Z_sim <- complete_ra(N, m = 50)
+  fit_sim <- lm(Y_obs ~ Z_sim)
+  t_sims[i] <- coeftest(fit_sim, vcov = vcovHC(fit_sim, type = "HC2"))[2,3]
+}
+
+# two sided p-value
+p <- mean(abs(t_sims) >= abs(t_obs))
+
+hist(t_sims)
+abline(v = t_obs, lwd=2, col="red")
+```
+
+
 
 # Using covariates in analysis
 
