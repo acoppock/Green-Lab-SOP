@@ -3,11 +3,11 @@ title: "Green Lab SOP"
 author: "Donald P. Green, Winston Lin, and Alexander Coppock"
 date: 'Version 0.4: July 23, 2015'
 output:
-pdf_document:
-toc: yes
-html_document:
-theme: cosmo
-toc: yes
+  pdf_document:
+    toc: yes
+  html_document:
+    theme: cosmo
+    toc: yes
 bibliography: SOP.bib
 ---
 \pagebreak
@@ -52,16 +52,15 @@ For all permutation methods, we will use at least 10,000 randomizations and the 
 
 ## Example: Studentized Permuation Test
 
-```{r}
+```{r, cache=TRUE}
 suppressMessages({
   library(randomizr)
   library(sandwich)
   library(lmtest)
 })
-
 set.seed(1234567)
 
-N <- 100
+N <- 200
 
 # Create potential outcomes
 Y0 <- rnorm(N)
@@ -108,6 +107,44 @@ Estimation methods for the primary analysis will normally have been specified in
 
 - If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in Gerber and Green discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
 
+## Example: Default Covariate Adjustment Procedure
+```{r}
+suppressMessages({
+  library(randomizr)
+  library(sandwich)
+  library(lmtest)
+})
+
+N <- 200
+
+# Make some covariates
+X1 <- rnorm(N)
+X2 <- rbinom(N, size = 1, prob = 0.5)
+
+# Make some potential outcomes
+Y0 <- .6*X1 + 3*X2 + rnorm(N)
+Y1 <- Y0 + .4
+
+# Conduct a random assignment and reveal outcomes
+Z <- complete_ra(N, m= 100)
+Y_obs <- Y1*Z + Y0*(1-Z)
+
+# Mean-center the covariates
+X1_c <- X1 - mean(X1)
+X2_c <- X2 - mean(X2)
+
+# Conduct Estimation
+fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c))
+
+# Robust Standard Errors
+coeftest(fit_adj, vcov = vcovHC(fit_adj, type = "HC2"))
+
+# Compare to unadjusted model
+fit_unadj <- lm(Y_obs ~ Z)
+coeftest(fit_unadj, vcov = vcovHC(fit_unadj, type = "HC2"))
+```
+
+
 ## Choice of covariates for regression adjustment
 
 Ordinarily our choice of covariates for adjustment will have been specified in the PAP.
@@ -142,6 +179,57 @@ Observations with missing covariate values will be included in the regressions t
 
 2. If more than 10% of the covariate's values are missing, include a missingness dummy as an additional covariate and recode the missing values to an arbitrary constant, such as 0.^[This method is described in @Gerber2012, p. 241.] If the missingness dummies lead us to exceed the M / 20 or N / 20 maximum number of covariates (see above under "Choice of covariates"), revert to the mean-imputation method above.
 
+## Example: Recoding Missing Covariates
+
+```{r}
+suppressMessages({
+  library(randomizr)
+  library(sandwich)
+  library(lmtest)
+})
+
+N <- 200
+
+# Make some covariates
+X1 <- rnorm(N)
+X2 <- rbinom(N, size = 1, prob = 0.5)
+
+# Make some potential outcomes
+Y0 <- .6*X1 + 3*X2 + rnorm(N)
+Y1 <- Y0 + .4
+
+# Conduct a random assignment and reveal outcomes
+Z <- complete_ra(N, m= 100)
+Y_obs <- Y1*Z + Y0*(1-Z)
+
+# Some covariate values are missing:
+X1_obs <- X1
+X2_obs <- X2
+
+X1_obs[sample(1:N, size = 10)] <- NA
+X2_obs[sample(1:N, size = 50)] <- NA
+
+# Less than 10% of X1_obs is missing, so:
+X1_obs[is.na(X1_obs)] <- mean(X1_obs, na.rm = TRUE)
+
+# More than 10% of X2_obs is missing, so:
+X2_missing <- is.na(X2_obs)
+X2_obs[X2_missing] <- 0
+
+# Mean-center the covariates
+X1_obs_c <- X1_obs - mean(X1_obs)
+X2_obs_c <- X2_obs - mean(X2_obs)
+X2_missing_c <- X2_missing - mean(X2_missing)
+
+# Conduct Estimation
+fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c + X2_missing_c))
+
+# Robust Standard Errors
+coeftest(fit_adj, vcov = vcovHC(fit_adj, type = "HC2"))
+```
+
+
+
 ## Unadjusted estimates, alternative regression specifications, and nonlinear models
 
 Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary, and if alternative estimates differ substantially, we will note the lack of robustness and be appropriately restrained in our conclusions.
@@ -161,6 +249,45 @@ We will use a permutation test (randomization inference) to calculate the p-valu
 In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates, calculation of the likelihood-ratio test statistic for the hypothesis that all the coefficients on the covariates are zero, and randomization inference to calculate the p-value.
 
 A p-value of 0.01 or lower should prompt a thorough review of the random assignment procedure and any possible data-handling mistakes. If the review finds no errors, we will report the imbalance test, proceed on the assumption that the imbalance is due to chance, and report estimates with and without covariate adjustment.
+
+## Example: Permutation Tests of Covariate Balance
+```{r, cache=TRUE}
+# Generate Covariates
+library(randomizr)
+
+N <- 1000
+
+gender <- sample(c("M", "F"), N, replace=TRUE)
+age <- sample(18:65, N, replace = TRUE)
+lincome <- rnorm(N, 10, 3)
+party <- sample(c("D", "R", "I"), N, prob=c(.45, .35,.2), replace=TRUE)
+education <- sample(10:20, N, replace=TRUE)
+
+# Conduct Random Assignment
+Z <- complete_ra(N, 500)
+
+# Obtain observed F-statistic
+fit <- lm(Z ~ gender + age + lincome + party + education)
+f_obs <- summary(fit)$f[1]
+
+# Compare to sampling distribution of F
+
+sims <- 10000
+f_sims <- rep(NA, sims)
+
+for(i in 1:sims){
+  Z_sim <- complete_ra(N, 500)
+  fit_sim <- lm(Z_sim ~ gender + age + lincome + party + education)
+  f_sims[i] <- summary(fit_sim)$f[1]
+}
+
+# Obtain p-value
+p <- mean(f_sims > f_obs)
+p
+
+hist(f_sims)
+abline(v = f_obs, lwd=3, col="red")
+```
 
 ## Analysis of block randomized experiments with treatment probabilities that vary by block
 
