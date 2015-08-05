@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
-author: "Donald P. Green, Winston Lin, and Alexander Coppock"
-date: 'Version 0.4: July 23, 2015'
+author: "Winston Lin, Donald P. Green, and Alexander Coppock"
+date: 'Version 0.5: August 5, 2015'
 output:
   pdf_document:
     toc: yes
@@ -13,34 +13,38 @@ bibliography: SOP.bib
 \pagebreak
 This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
-This is a living document. To suggest changes or additions, please feel free to e-mail us or submit an issue request on GitHub. Also, when referencing this document, please be sure to note the version.
+This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and a.coppock@columbia.edu (Coppock).] or submit an [issue request on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version.
 
 We thank (without implicating) Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Anselm Rink, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments.
 
-# Checks on data preparation and study implementation
+# Preliminary checks on data preparation and study implementation
 
-We will have at least two team members involved in all raw data collection efforts (including, but not limited to, the gathering of data from survey organizations and government agencies). We will obtain Institutional Review Board approval for these team members to have access to the raw data.
+After collection of the raw data, all data processing steps leading up to creation of the files for analysis will be performed by computer code. We will make these computer programs publicly available.
 
-If we use computer programs to construct variables for analysis, we will make these programs publicly available.
+The following types of checks should be performed and documented before analyses are publicly disseminated or submitted for publication:^[If any of these checks require access to confidential data, we will obtain Institutional Review Board approval for the team members performing the checks.]
 
-The following types of checks should be performed and documented before analyses are publicly disseminated or submitted for publication:
+- Verifying that treatment occurred. Supportive evidence can include receipts for expenses associated with treatment, spot checks by more than one observer in the field, geotagged photographs, and/or manipulation checks (statistical evidence that random assignment created a treatment contrast in the intended direction—see, e.g., @Gerber2012, Box 10.3, p. 335).
 
-- Verification that treatment occurred. Supportive evidence can include receipts for expenses associated with treatment, spot checks by more than one observer in the field, geotagged photographs, and/or manipulation checks (statistical evidence that random assignment created a treatment contrast in the intended direction—see, e.g., @Gerber2012, Box 10.3, p. 335).
+- Verifying that outcome data were gathered (e.g., via receipts, spot checks, and/or having a second team member independently gather data for a sample of cases).
 
-- Verification that outcome data were gathered (e.g., via receipts, spot checks, and/or having a second team member independently gather data for a sample of cases).
+- Verifying that there were at least two team members involved in all raw data collection efforts (including, but not limited to, the gathering of data from survey organizations and government agencies).
 
-- Examination of the distributions and missingness rates of all variables used in the analysis and their precursors in the raw data files. These variables should be checked both for plausibility and for consistency across the stages of data processing. The checks should normally include not only univariate summaries, but also cross-tabulations of related variables.
+- Verifying that the computer programs for data processing correctly implement the intended logic and that, when applied to the raw data, these programs reproduce the data used in the analysis.
+
+- Examining the distributions and missingness rates of all variables used in the analysis and their precursors in the raw data files. These variables should be checked both for plausibility and for consistency across the stages of data processing. The checks should normally include not only univariate summaries, but also cross-tabulations of related variables.
 
 - Other checks described under "Covariate imbalance and the detection of administrative errors" and "Verifying that randomization was implemented as planned".
+
+Any unresolved data preparation or processing issues will be disclosed in a research report or supplementary materials.
 
 # Hypothesis testing
 
 ## One-tailed or two-tailed test?
 
-We will report two-tailed hypothesis tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests – i.e. to reject the null if the result was
+We will report two-tailed hypothesis tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 (p. 70) discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests: for example, to reject the null if the result was
 in the bottom 1 percent of the distribution or in the top 4 percent, or the bottom 0.5 and the top 4.5 percent, and so
 on. These asymmetric tests would gain much of the statistical power from one-sided tests, but still be set up
-statistically to reject the null in the presence of very large, negative results."]
+statistically to reject the null in the presence of very large negative results."]
 
 ## Use of permutation methods
 
@@ -232,7 +236,7 @@ coeftest(fit_adj, vcov = vcovHC(fit_adj, type = "HC2"))
 
 ## Unadjusted estimates, alternative regression specifications, and nonlinear models
 
-Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary, and if alternative estimates differ substantially, we will note the lack of robustness and be appropriately restrained in our conclusions.
+Our primary analysis will be based on a pre-specified covariate-adjusted estimator (unless $N < 20$), but we will also report unadjusted estimates as a robustness check. Results from alternative regression specifications may also be reported as specified in the PAP, or as allowed under "Choice of covariates" above, or as requested by referees. We will make clear to readers which estimator was pre-specified as primary.
 
 For binary or count-data outcomes, some referees prefer estimates based on nonlinear models such as logit, probit, or Poisson regression. Although we disagree with this preference (the robustness of least squares adjustment in RCTs is supported by both theory and simulation evidence),[^9] we will provide supplementary estimates derived from nonlinear models (using marginal effects calculations) if requested by referees. We prefer logits to probits because adjustment based on the probit MLE is not misspecification-robust.[^10]
 
@@ -295,7 +299,7 @@ abline(v = f_obs, lwd=3, col="red")
 
 When treatment assignment probabilities vary by block, we will use weighted least squares regression with inverse probability-of-assignment weights (IPW) to estimate the average treatment effect (ATE), except in extreme cases (defined below).  See @Gerber2012, section 4.5 for discussion of the IPW method.
 
-An alternative approach, sometimes called the least-squares dummy variable (LSDV) method, is to run an OLS regression of the outcome on treatment, block indicators, and covariates. The estimand for the LSDV method is a weighted ATE, giving each block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in the block and $P_j$ is their probability of assignment to treatment (@Angrist2009, p. 75; @Gerber2012, p. 119). In contrast, the estimand for the IPW method is the unweighted ATE, which gives block $j$ a total weight proportional to $N_j$. We will use IPW except in the extreme case where there is at least one block $j$ such that
+An alternative approach, sometimes called the least-squares dummy variable (LSDV) method, is to run an OLS regression of the outcome on treatment, block indicators, and covariates. The estimand for the LSDV method is a weighted ATE, giving each block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in the block and $P_j$ is their probability of assignment to treatment (@Angrist1998, p. 256; @Angrist2009, p. 75; @Gerber2012, p. 119). In contrast, the estimand for the IPW method is the unweighted ATE, which gives block $j$ a total weight proportional to $N_j$. We will use IPW except in the extreme case where there is at least one block $j$ such that
 
 $$ \frac{N_j}{\sum_j N_j} > 20 \, \frac{N_j P_j (1-P_j)}{\sum_j N_j P_j (1-P_j)}. $$
 
@@ -323,7 +327,7 @@ In experiments that encounter noncompliance with assigned treatments, our analys
 
 ## Treatment/placebo designs
 
-In a treatment/placebo design, subjects are randomly assigned to be encouraged to receive either the treatment or a placebo [@Gerber2012, pp. 161-164]. Those who actually receive the treatment or placebo are classified as compliers. The intended analysis compares the outcomes of treatment group compliers vs. placebo group compliers. However, if the encouragement efforts differ between the two arms, the two groups of compliers may not be comparable. To evaluate their comparability, we will perform the following checks:
+In a treatment/placebo design, subjects are randomly assigned to be encouraged to receive either the treatment or a placebo [@Gerber2012, pp. 161-164]. Those who actually receive the treatment or placebo are revealed to be compliers. The intended analysis compares the outcomes of treatment group compliers vs. placebo group compliers. However, if the encouragement efforts differ between the two arms, the two groups of compliers may not be comparable. To evaluate their comparability, we will perform the following checks:
 
 1. Implementation: Were the treatment and placebo administered by the same personnel? Were these personnel blinded to subjects’ random assignments until after compliance status was determined, or if not, were the treatment and placebo administered symmetrically in their timing, place, and manner?
 
@@ -333,7 +337,7 @@ In a treatment/placebo design, subjects are randomly assigned to be encouraged t
 
 4. Comparison of noncompliers' outcomes across arms: Using noncompliers only, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment assignment does not affect the average outcome.
 
-In checks #2-#4, p-values below 0.10 will be considered evidence of noncomparability.
+In checks #2-#4, p-values below 0.05 will be considered evidence of noncomparability.
 
 If any of those checks raises a red flag, we will use two-stage least squares to estimate the complier average causal effect, using assignment to the treatment as an instrumental variable predicting actual treatment. In other words, we will analyze the experiment as if it had a conventional treatment/baseline design instead of a treatment/placebo design.
 
@@ -345,7 +349,7 @@ In Nickerson's rolling protocol design [@Nickerson2005], researchers create a ra
 
 2. The decision to stop treatment attempts must be based solely on resources, not on characteristics of the subjects or clusters.
 
-3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.10 will be considered evidence of noncomparability.
+3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.05 will be considered evidence of noncomparability.
 
 If these checks cast doubt on the comparability of treatment and control groups, we will not move any unattempted treatment group members into the control group.
 
@@ -359,11 +363,11 @@ We will routinely perform three types of checks for asymmetrical attrition:[^1]
 
 3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test.
 
-In checks #2 and #3, p-values below 0.10 will be considered evidence of asymmetrical attrition.
+In checks #2 and #3, p-values below 0.05 will be considered evidence of asymmetrical attrition.
 
 If any of those checks raises a red flag, and if the PAP has not specified methods for addressing attrition bias, we will follow these procedures:
 
-1. Rely on second-round sampling of nonrespondents, combined with extreme value bounds,[^4] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
+1. Rely on second-round sampling of nonrespondents, combined with extreme value bounds [@Aronow2015] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
 
 2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds (@Gerber2012, pp. 226-227). (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
 
@@ -371,11 +375,9 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 
 [^3]: Note that in the case of a two-arm trial, the Studentized permutation test does not compare the estimated treatment effect with its empirical distribution, but instead compares a heteroskedasticity-robust t-statistic with its empirical distribution. For background and motivation, see @Romano2009 and @Chung2013.
 
-[^4]: Aronow et al. (2015).
-
 # Outliers
 
-Except as specified in the PAP or as part of a supplemental robustness check, we will not delete or edit outlying values merely because they are large. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
+Except as specified in the PAP or as part of a supplemental robustness check, we will not delete or edit outlying values merely because they are very large or very small. However, it is appropriate for outlying values to trigger checks for data integrity, as long as the process and any resulting edits are results-blind and symmetric with respect to treatment arm.
 
 # When randomization doesn’t go according to plan
 
@@ -385,7 +387,7 @@ We will have at least two team members check each computer program used to rando
 
 See the section "Covariate imbalance and the detection of administrative errors" for a description of the statistical test we will use to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In addition to reporting the result of this test, we will follow the reporting guidelines in the "Allocation Method" section of @Gerber2014 (Appendix 1, part C).
 
-In the event that these checks reveal any errors, we will report the errors and take them into account in any analyses we report. We will add more specific guidance and examples to our SOP as we learn from our own and/or other researchers' experiences.
+In the event that these checks reveal any errors, we will report the errors and take them into account in any analyses we report (see below for examples). We will add more specific guidance and examples to our SOP as we learn from our own and/or other researchers' experiences.
 
 ## Learning of a restricted randomization
 
@@ -473,7 +475,7 @@ In such cases, we will make publicly available a summary of the design and imple
 
 ## Differences between the pre-specified analyses and those that appear in the article
 
-The published article will reference the PAP. If the article contains analyses that deviate from the PAP, it will make clear that these analyses were not pre-specified. Conversely, if the article omits any pre-specified analyses, it will give a brief description of them and they will be made available in a document that is referenced in the article.
+Each published article will reference its PAP. If the article contains analyses that deviate from the PAP, it will make clear that these analyses were not pre-specified. Conversely, if the article omits any pre-specified analyses, it will give a brief description of them and they will be made available in a document that is referenced in the article.
 
 # Issues specific to voter turnout experiments
 
@@ -487,9 +489,7 @@ In some instances, voter turnout records include the date on which a ballot is c
 
 In canvassing and phone-banking experiments, noncompliance is common. In such cases, contact will be coded broadly to include any form of interaction with the subject that might affect turnout -- even a very brief conversation whereby the respondent hangs up after the canvasser introduces himself/herself. Messages left with housemates count as contact. Interactions that do not count as contact include busy signals, no one opening the door, or failure to communicate with the respondent due to language barriers. A phone call from a number with a recognizable caller ID (e.g., "Vote '98 Headquarters") would count as contact.
 
-In instances where canvassing or calling efforts fail to attempt large swaths of the originally targeted treatment group (e.g., a certain group of precincts), an assessment will be made of whether failure-to-attempt was related to the potential outcomes of the subjects. If the scope of the canvassing or calling effort fell short for reasons that seem to have nothing to do with the attributes of the subjects who went unattempted, the subject pool will be partitioned and the analysis restricted to the attempted precincts.
+In instances where canvassing or calling efforts fail to attempt large swaths of the originally targeted treatment group (e.g., a certain group of precincts), an assessment will be made of whether failure-to-attempt was related to the potential outcomes of the subjects. If the scope of the canvassing or calling effort fell short for reasons that seem to have nothing to do with the attributes of the subjects who went unattempted, the subject pool will be partitioned and the analysis restricted to the attempted precincts. (See the section on "Nickerson's rolling protocol design".)
 
 # References
-
-nocite: |
 
