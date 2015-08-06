@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5: August 5, 2015'
+date: 'Version 0.5b: August 6, 2015'
 output:
   pdf_document:
     toc: yes
@@ -48,13 +48,16 @@ statistically to reject the null in the presence of very large negative results.
 
 ## Use of permutation methods
 
-For significance tests and p-values, we will either report Studentized permutation tests [@Chung2013] or use permutation methods to check the accuracy of asymptotic approximations.
+For significance tests and p-values, we will either (1) report Studentized permutation tests or (2) use permutation methods to check the accuracy of asymptotic approximations.
 
-For an example of the former, see below under "Attrition." For an example of the latter, see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
+For an example of (1), see below. The Studentized permutation t-test compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[For background and motivation, see @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator.^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
+inference." We conjecture that, similarly, Studentized permutation tests tend to have more power with HC0 or HC1 than with HC2, HC3, or HC4.]
+
+For an example of (2), see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
 
 For all permutation methods, we will use at least 10,000 randomizations and the random number seed 1234567.
 
-## Example: Studentized Permuation Test
+## Example: Studentized Permutation Test
 
 ```{r, cache=TRUE}
 suppressMessages({
@@ -77,8 +80,8 @@ Y_obs <- Y1*Z + Y0*(1-Z)
 # Conduct Estimation
 fit <- lm(Y_obs ~ Z)
 
-# Obtain Heteroskedasticty-robust t-statisic
-t_obs <- coeftest(fit, vcov = vcovHC(fit, type = "HC2"))[2,3]
+# Obtain Heteroskedasticity-robust t-statistic
+t_obs <- coeftest(fit, vcov = vcovHC(fit, type = 'HC0'))['Z','t value']
 
 # Conduct simulation
 sims <- 10000
@@ -87,7 +90,7 @@ t_sims <- rep(NA, sims)
 for(i in 1:sims){
   Z_sim <- complete_ra(N, m = 50)
   fit_sim <- lm(Y_obs ~ Z_sim)
-  t_sims[i] <- coeftest(fit_sim, vcov = vcovHC(fit_sim, type = "HC2"))[2,3]
+  t_sims[i] <- coeftest(fit_sim, vcov = vcovHC(fit_sim, type = 'HC0'))['Z_sim','t value']
 }
 
 # two sided p-value
@@ -359,7 +362,7 @@ We will routinely perform three types of checks for asymmetrical attrition:[^1]
 
 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
 
-2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.[^3]
+2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.
 
 3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test.
 
@@ -372,8 +375,6 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds (@Gerber2012, pp. 226-227). (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
 
 [^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Missing covariate values".
-
-[^3]: Note that in the case of a two-arm trial, the Studentized permutation test does not compare the estimated treatment effect with its empirical distribution, but instead compares a heteroskedasticity-robust t-statistic with its empirical distribution. For background and motivation, see @Romano2009 and @Chung2013.
 
 # Outliers
 
