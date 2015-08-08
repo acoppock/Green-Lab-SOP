@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5b: August 6, 2015'
+date: 'Version 0.5c: August 7, 2015'
 output:
   pdf_document:
     toc: yes
@@ -249,18 +249,24 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 
 ## Covariate imbalance and the detection of administrative errors
 
-We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of the F-statistic for the hypothesis that all the coefficients on the covariates are zero (@Gerber2012, p. 107). If the experiment is block-randomized with treatment probabilities that vary by block, we will include dummy variables for the varying treatment probabilities in both the restricted and unrestricted regression models used to compute the F-statistic.
+We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). If the experiment is block-randomized with treatment probabilities that vary by block, we will include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
 
-We will use a permutation test (randomization inference) to calculate the p-value associated with the F-statistic.
+We will use a permutation test (randomization inference) to calculate the p-value associated with the Wald statistic.
 
 In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates, calculation of the likelihood-ratio test statistic for the hypothesis that all the coefficients on the covariates are zero, and randomization inference to calculate the p-value.
 
 A p-value of 0.01 or lower should prompt a thorough review of the random assignment procedure and any possible data-handling mistakes. If the review finds no errors, we will report the imbalance test, proceed on the assumption that the imbalance is due to chance, and report estimates with and without covariate adjustment.
 
-## Example: Permutation Tests of Covariate Balance
+## Example: Permutation Test of Covariate Balance
 ```{r, cache=TRUE}
+suppressMessages({
+  library(randomizr)
+  library(sandwich)
+})
+
 # Generate Covariates
-library(randomizr)
+
+set.seed(1234567)
 
 N <- 1000
 
@@ -273,27 +279,41 @@ education <- sample(10:20, N, replace=TRUE)
 # Conduct Random Assignment
 Z <- complete_ra(N, 500)
 
-# Obtain observed F-statistic
+# Regress treatment on covariates
 fit <- lm(Z ~ gender + age + lincome + party + education)
-f_obs <- summary(fit)$f[1]
 
-# Compare to sampling distribution of F
+# Obtain observed heteroskedasticity-robust Wald statistic
+# See Wooldridge (2010), p. 62
+# Null hypothesis is that the slope coefficients are all zero, i.e.
+#  R beta = 0
+#  where beta is the 7 x 1 vector of coefficients, including the intercept
+#  and R is the 6 x 7 matrix with all elements zero except
+#   R[1,2] = R[2,3] = R[3,4] = R[4,5] = R[5,6] = R[6,7] = 1
+
+Rbeta.hat <- coef(fit)[-1]
+RVR <- vcovHC(fit, type <- 'HC0')[-1,-1]
+W_obs <- as.numeric(Rbeta.hat %*% solve(RVR, Rbeta.hat))  # Wooldridge, equation (4.13)
+
+# Compare to permutation distribution of W
 
 sims <- 10000
-f_sims <- rep(NA, sims)
+W_sims <- numeric(sims)
 
 for(i in 1:sims){
   Z_sim <- complete_ra(N, 500)
   fit_sim <- lm(Z_sim ~ gender + age + lincome + party + education)
-  f_sims[i] <- summary(fit_sim)$f[1]
+
+  Rbeta.hat <- coef(fit_sim)[-1]
+  RVR <- vcovHC(fit_sim, type <- 'HC0')[-1,-1]
+  W_sims[i] <- as.numeric(Rbeta.hat %*% solve(RVR, Rbeta.hat))
 }
 
 # Obtain p-value
-p <- mean(f_sims > f_obs)
+p <- mean(W_sims >= W_obs)
 p
 
-hist(f_sims)
-abline(v = f_obs, lwd=3, col="red")
+hist(W_sims)
+abline(v = W_obs, lwd=3, col="red")
 ```
 
 ## Analysis of block randomized experiments with treatment probabilities that vary by block
@@ -434,7 +454,7 @@ If the trump assumption cannot be reasonably made, then we will replace step 2 w
 
 Suppose a fundraising experiment randomly assigns 500 of 1,000 names to a treatment that consists of an invitation to contribute to a charitable cause. However, it is later discovered that 600 names appear once and 200 names appear twice. Before the invitations are mailed, duplicate invitations are discarded, so that no one receives more than one invitation.
 
-In this case, the experimental procedure justifies the trump assumption. Names that are assigned once or twice are in treatment, the remainder are in control. It's easy enough in this example to calculate analytic probabilities (0.5 for those who appear once, 0.75 for those who appear twice).  However, in some situations, simulating the exact prodecure is the best way to determine probabilities (it can also be a good way to check your work!).  Here is a short simulation in r that confirms the analytic solution.
+In this case, the experimental procedure justifies the trump assumption. Names that are assigned once or twice are in treatment, the remainder are in control. It's easy enough in this example to calculate analytic probabilities (0.5 for those who appear once, $1 - (500/1000) \times (499/999) \approx 0.75$ for those who appear twice).  However, in some situations, simulating the exact procedure is the best way to determine probabilities (it can also be a good way to check your work!).  Here is a short simulation in R that confirms the analytic solution.
 
 ```{r, cache=TRUE}
 # Load randomizr for complete_ra()
