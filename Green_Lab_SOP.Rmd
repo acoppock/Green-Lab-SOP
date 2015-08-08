@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5c: August 7, 2015'
+date: 'Version 0.5d: August 8, 2015'
 output:
   pdf_document:
     toc: yes
@@ -253,7 +253,7 @@ We will perform a statistical test to judge whether observed covariate imbalance
 
 We will use a permutation test (randomization inference) to calculate the p-value associated with the Wald statistic.
 
-In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates, calculation of the likelihood-ratio test statistic for the hypothesis that all the coefficients on the covariates are zero, and randomization inference to calculate the p-value.
+In an experiment with multiple treatments, we will perform an analogous test using multinomial logistic regression of treatment on covariates.
 
 A p-value of 0.01 or lower should prompt a thorough review of the random assignment procedure and any possible data-handling mistakes. If the review finds no errors, we will report the imbalance test, proceed on the assumption that the imbalance is due to chance, and report estimates with and without covariate adjustment.
 
