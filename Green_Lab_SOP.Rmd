@@ -1,7 +1,7 @@
 ---
 title: "Green Lab SOP"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5d: August 8, 2015'
+date: 'Version 0.5d: August 9, 2015'
 output:
   pdf_document:
     toc: yes
@@ -50,7 +50,7 @@ statistically to reject the null in the presence of very large negative results.
 
 For significance tests and p-values, we will either (1) report Studentized permutation tests or (2) use permutation methods to check the accuracy of asymptotic approximations.
 
-For an example of (1), see below. The Studentized permutation t-test compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[For background and motivation, see @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator.^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
+For an example of (1), see below. The Studentized permutation t-test (@Janssen1997) compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[See also @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator.^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
 inference." We conjecture that, similarly, Studentized permutation tests tend to have more power with HC0 or HC1 than with HC2, HC3, or HC4.]
 
 For an example of (2), see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
