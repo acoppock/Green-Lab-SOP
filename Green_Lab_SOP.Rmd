@@ -1,7 +1,7 @@
 ---
-title: "Green Lab SOP"
+title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5d: August 9, 2015'
+date: 'Version 0.5e: August 12, 2015'
 output:
   pdf_document:
     toc: yes
@@ -249,7 +249,7 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 
 ## Covariate imbalance and the detection of administrative errors
 
-We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). If the experiment is block-randomized with treatment probabilities that vary by block, we will include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
+We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). The covariates to be included in the regression should be specified in the PAP. If the experiment is block-randomized with treatment probabilities that vary by block, we will also include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
 
 We will use a permutation test (randomization inference) to calculate the p-value associated with the Wald statistic.
 
@@ -346,7 +346,7 @@ In experiments that encounter noncompliance with assigned treatments, our analys
 
 ## Estimating treatment effects when some subjects receive "partial treatment"
 
-@Gerber2012 (pp. 164-165) discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. Unless variation in treatment dosage is randomized, we will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165].
+@Gerber2012 (pp. 164-165) discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. We will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165] (thus adopting the most expansive definition of treatment in order to make the instrumental variables exclusion restriction plausible), unless either the variation in treatment dosage is randomized or the PAP specifies both the dosage measure and the method for analyzing the dose-response relationship.
 
 ## Treatment/placebo designs
 
@@ -384,7 +384,7 @@ We will routinely perform three types of checks for asymmetrical attrition:[^1]
 
 2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.
 
-3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (e.g., @Gerber2012 [p. 107]). As in check #2, we will implement the test as a Studentized permutation test.
+3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (see the section on "Covariate imbalance and the detection of administrative errors"). As in check #2, we will implement the test as a Studentized permutation test.
 
 In checks #2 and #3, p-values below 0.05 will be considered evidence of asymmetrical attrition.
 
