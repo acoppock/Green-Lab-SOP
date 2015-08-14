@@ -1,7 +1,7 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 0.5e: August 12, 2015'
+date: 'Version 1.0: August 13, 2015'
 output:
   pdf_document:
     toc: yes
@@ -13,7 +13,7 @@ bibliography: SOP.bib
 \pagebreak
 This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
-This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and a.coppock@columbia.edu (Coppock).] or submit an [issue request on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version.
+This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and a.coppock@columbia.edu (Coppock).] or submit an [issue request on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version and date.
 
 We thank (without implicating) Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Anselm Rink, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments.
 
@@ -44,7 +44,7 @@ Any unresolved data preparation or processing issues will be disclosed in a rese
 We will report two-tailed hypothesis tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 (p. 70) discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests: for example, to reject the null if the result was
 in the bottom 1 percent of the distribution or in the top 4 percent, or the bottom 0.5 and the top 4.5 percent, and so
 on. These asymmetric tests would gain much of the statistical power from one-sided tests, but still be set up
-statistically to reject the null in the presence of very large negative results."]
+statistically to reject the null in the presence of very large negative results." See also @Tukey1993 (p. 276).]
 
 ## Use of permutation methods
 
@@ -154,9 +154,11 @@ coeftest(fit_unadj, vcov = vcovHC(fit_unadj, type = "HC2"))
 
 ## Choice of covariates for regression adjustment
 
-Ordinarily our choice of covariates for adjustment will have been specified in the PAP.
+Ordinarily our choice of covariates for adjustment will have been specified in the PAP. For voter turnout experiments, the SOP section "Issues specific to voter turnout experiments" gives a default set of covariates in case the PAP fails to specify the choice.
 
 With M and N as defined above, we will include no more than $M / 20$ covariates in regressions with treatment-covariate interactions, and no more than $N / 20$ covariates in regressions without such interactions.[^5]
+
+If PAP has failed to specify the choice of covariates, if the experiment is not a voter turnout study, and if the number of available baseline covariates (excluding higher powers, other transformations, and interactions between covariates) is 10 or fewer and does not exceed the limits above, we will include all the covariates in our regressions.
 
 In general, covariates should be measured before randomization. To make any exceptions to this rule, we need to have a convincing argument that either (1) the variable is a measure of pre-randomization conditions, and treatment assignment had no effect on measurement error, or (2) although the variable is wholly or partly a measure of post-randomization conditions, it could not have been affected by treatment assignment. (Rainfall on Election Day would probably satisfy #2.)
 
@@ -249,7 +251,7 @@ For binary or count-data outcomes, some referees prefer estimates based on nonli
 
 ## Covariate imbalance and the detection of administrative errors
 
-We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). The covariates to be included in the regression should be specified in the PAP. If the experiment is block-randomized with treatment probabilities that vary by block, we will also include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
+We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). The covariates to be included in the regression should be specified in the PAP. (For voter turnout experiments, the SOP section "Issues specific to voter turnout experiments" gives a default set of covariates in case the PAP fails to specify the choice.) If the experiment is block-randomized with treatment probabilities that vary by block, we will also include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
 
 We will use a permutation test (randomization inference) to calculate the p-value associated with the Wald statistic.
 
@@ -511,6 +513,8 @@ In some instances, voter turnout records include the date on which a ballot is c
 In canvassing and phone-banking experiments, noncompliance is common. In such cases, contact will be coded broadly to include any form of interaction with the subject that might affect turnout -- even a very brief conversation whereby the respondent hangs up after the canvasser introduces himself/herself. Messages left with housemates count as contact. Interactions that do not count as contact include busy signals, no one opening the door, or failure to communicate with the respondent due to language barriers. A phone call from a number with a recognizable caller ID (e.g., "Vote '98 Headquarters") would count as contact.
 
 In instances where canvassing or calling efforts fail to attempt large swaths of the originally targeted treatment group (e.g., a certain group of precincts), an assessment will be made of whether failure-to-attempt was related to the potential outcomes of the subjects. If the scope of the canvassing or calling effort fell short for reasons that seem to have nothing to do with the attributes of the subjects who went unattempted, the subject pool will be partitioned and the analysis restricted to the attempted precincts. (See the section on "Nickerson's rolling protocol design".)
+
+If the PAP fails to specify the choice of covariates for regression adjustment or for the test of covariate balance, the default set of covariates will include voter turnout in all past elections for which data are available in the voter file, excluding any elections in which turnout rates in the subject pool were below 5%.
 
 # References
 
