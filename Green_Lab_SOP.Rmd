@@ -1,7 +1,7 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 1.0: August 13, 2015'
+date: 'Version 1.01: August 25, 2015'
 output:
   pdf_document:
     toc: yes
@@ -15,7 +15,7 @@ This standard operating procedures (SOP) document describes the default practice
 
 This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and a.coppock@columbia.edu (Coppock).] or submit an [issue request on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version and date.
 
-We thank (without implicating) Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Anselm Rink, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments.
+Many thanks to Peter Aronow, Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Berk Ozler, Anselm Rink, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments and discussions.
 
 # Preliminary checks on data preparation and study implementation
 
@@ -93,8 +93,16 @@ for(i in 1:sims){
   t_sims[i] <- coeftest(fit_sim, vcov = vcovHC(fit_sim, type = 'HC0'))['Z_sim','t value']
 }
 
-# two sided p-value
-p <- mean(abs(t_sims) >= abs(t_obs))
+# "In general, if you want a two-sided P-value, compute both one-sided P-values, 
+#  double the smaller one, and take the minimum of this value and 1."
+#    Rosenbaum (2010), Design of Observational Studies, p. 33, note 2
+# (Other options exist, but this is our default.)
+
+p.left  <- mean(t_sims <= t_obs)
+p.right <- mean(t_sims >= t_obs)
+
+p <- min(2 * min(p.left, p.right), 1)
+p
 
 hist(t_sims)
 abline(v = t_obs, lwd=2, col="red")
