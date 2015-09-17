@@ -1,7 +1,7 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 1.02: Sept. 10, 2015'
+date: 'Version 1.03: Sept. 17, 2015'
 output:
   pdf_document:
     toc: yes
@@ -356,7 +356,7 @@ In experiments that encounter noncompliance with assigned treatments, our analys
 
 ## Estimating treatment effects when some subjects receive "partial treatment"
 
-@Gerber2012 (pp. 164-165) discuss several approaches for estimating treatment effects when some subjects receive a full dose of the intended intervention and others receive only part of it. We will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165] (thus adopting the most expansive definition of treatment in order to make the instrumental variables exclusion restriction plausible), unless either the variation in treatment dosage is randomized or the PAP specifies both the dosage measure and the method for analyzing the dose-response relationship.
+@Gerber2012 (pp. 164-165) discuss several approaches for estimating treatment effects when some treatment group members receive a full dose of the intended intervention and others receive only part of it. If there is no noncompliance in the control group, we will follow the approach where "the researcher simply considers all partially treated subjects as fully treated" [@Gerber2012, p. 165] (thus adopting the most expansive definition of treatment in order to make the instrumental variables exclusion restriction plausible), unless either the variation in treatment dosage is randomized or the PAP specifies both the dosage measure and the method for analyzing the dose-response relationship.
 
 ## Treatment/placebo designs
 
@@ -428,7 +428,7 @@ We will reveal such implicit restrictions in our research reports and articles.
 
 If we can formalize the implicit restriction and reconstruct the set of admissible randomizations, we will analyze the data as suggested in @Gerber2012 (Box 4.5, p. 121): First, if the treatment and control groups are of different sizes, we will use inverse probability-of-assignment weights to estimate the average treatment effect (estimating the weights by simulating a large number of admissible randomizations and tabulating the fraction of randomizations that assign each subject to treatment or control). Second, we will use randomization inference (excluding the disallowed randomizations) to estimate p-values.
 
-If we cannot formalize the implicit restriction, we will keep the pre-specified analysis strategy but will note the issue for readers (e.g., by saying that we checked for covariate balance before implementing treatment assignment but did not have a fixed balance criterion in mind).^[As @Morgan2012 (p. 1264) explain, when randomizations with large covariate imbalances are disallowed, traditional methods of analysis that do not take the restriction into account will tend to result in conservative inferences.]
+If we cannot formalize the implicit restriction, we will keep the pre-specified analysis strategy but will note the issue for readers (e.g., by saying that we checked for covariate balance before implementing treatment assignment but did not have a fixed balance criterion in mind).
 
 ## Duplicate records in the dataset used for randomization
 
