@@ -1,12 +1,12 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 1.01: August 25, 2015'
+date: 'Version 1.02: Sept. 10, 2015'
 output:
+  pdf_document:
+    toc: yes
   html_document:
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 bibliography: SOP.bib
 ---
@@ -50,8 +50,8 @@ statistically to reject the null in the presence of very large negative results.
 
 For significance tests and p-values, we will either (1) report Studentized permutation tests or (2) use permutation methods to check the accuracy of asymptotic approximations.
 
-For an example of (1), see below. The Studentized permutation t-test (@Janssen1997) compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[See also @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator.^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
-inference." We conjecture that, similarly, Studentized permutation tests tend to have more power with HC0 or HC1 than with HC2, HC3, or HC4.]
+For an example of (1), see below. The Studentized permutation t-test (@Janssen1997) compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[See also @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator,^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
+inference." We conjecture that, similarly, Studentized permutation tests tend to have more power with HC0 or HC1 than with HC2, HC3, or HC4.] and p-values for two-tailed tests will be computed according to the following convention: "In general, if you want a two-sided P-value, compute both one-sided P-values, double the smaller one, and take the minimum of this value and 1" (@Rosenbaum2010, p. 33).
 
 For an example of (2), see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
 
