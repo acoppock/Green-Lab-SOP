@@ -1,7 +1,7 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 1.03: Sept. 17, 2015'
+date: 'Version 1.04: Dec. 22, 2015'
 output:
   pdf_document:
     toc: yes
@@ -350,6 +350,16 @@ For tables or figures describing covariate balance, we will follow the advice in
 
 If the primary treatment effect estimator is IPW, summary statistics on overall characteristics of the sample should be unweighted, since the IPW estimand is the unweighted ATE. If LSDV is the primary treatment effect estimator, the summary statistics should give each observation a weight proportional to $P_j (1 - P_j)$, since this gives block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, which matches the LSDV estimand.
 
+# Sample exclusions and the coding of outcome variables
+
+In general, we will avoid coding outcomes in ways that cause subjects to be excluded from the estimation of average treatment effects. Such exclusions are especially problematic when treatment assignment may affect the chances that a sample member will be excluded. For example, for an outcome such as the amount donated to a political campaign, we will not exclude subjects with outcome values of zero from our analyses.
+
+Exceptions include instances where sample exclusions do not threaten the symmetry between the randomly assigned treatment arms. For example, in an experiment with a treatment/placebo design, we will report analyses that exclude noncompliers if checks #1-4 in the section on "Treatment/placebo designs" yield satisfactory results.
+
+In a voter turnout experiment, we will exclude subjects who voted before treatment began, since their outcomes could not have been affected by treatment (see the section on "Issues specific to voter turnout experiments"). In other cases where data collected after random assignment identifies a subgroup of subjects whose outcomes were determined before treatment began, we will exclude that subgroup if (1) there was no plausible way for outcomes to be affected by treatment assignment before the actual treatment began and (2) empirical investigations analogous to checks #2-4 in the section on "Treatment/placebo designs" yield no evidence that this sample exclusion creates noncomparability between the treatment arms.
+
+The section on "Issues specific to survey or laboratory experiments" discusses other examples.
+
 # Noncompliance
 
 In experiments that encounter noncompliance with assigned treatments, our analysis will include a test of the hypothesis that the average intent-to-treat effect is zero.
@@ -388,7 +398,7 @@ If these checks cast doubt on the comparability of treatment and control groups,
 
 # Attrition
 
-We will routinely perform three types of checks for asymmetrical attrition:[^1]
+"Attrition" here means that outcome data are missing. (When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Missing covariate values".) Often, it is unclear theoretically whether missingness threatens the symmetry between treatment and control groups. We will routinely perform three types of checks for asymmetrical attrition:
 
 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
 
@@ -403,8 +413,6 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 1. Rely on second-round sampling of nonrespondents, combined with extreme value bounds [@Aronow2015] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
 
 2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds (@Gerber2012, pp. 226-227). (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
-
-[^1]: Attrition here means that outcome data are missing. When only baseline covariate data are missing, we will still include the observations in the analysis, as explained under "Missing covariate values".
 
 # Outliers
 
@@ -523,6 +531,19 @@ In canvassing and phone-banking experiments, noncompliance is common. In such ca
 In instances where canvassing or calling efforts fail to attempt large swaths of the originally targeted treatment group (e.g., a certain group of precincts), an assessment will be made of whether failure-to-attempt was related to the potential outcomes of the subjects. If the scope of the canvassing or calling effort fell short for reasons that seem to have nothing to do with the attributes of the subjects who went unattempted, the subject pool will be partitioned and the analysis restricted to the attempted precincts. (See the section on "Nickerson's rolling protocol design".)
 
 If the PAP fails to specify the choice of covariates for regression adjustment or for the test of covariate balance, the default set of covariates will include voter turnout in all past elections for which data are available in the voter file, excluding any elections in which turnout rates in the subject pool were below 5%.
+
+# Issues specific to survey or laboratory experiments
+
+## Do not exclude subjects who discern the purpose of the experiment
+
+Subjects in a lab or survey experiment may indicate in a post-experimental debriefing session that they discerned the hypothesis that we sought to test. We will not exclude these subjects from the analysis. The treatment assignment could have affected whether subjects discerned the hypothesis (see the section on "Sample exclusions and the coding of outcome variables").
+
+## Whether to exclude subjects who display inattention in survey experiments
+
+In an online survey experiment, some subjects may be clicking answers arbitrarily to complete the survey quickly. To detect such behavior, researchers sometimes insert "screener" questions (@Berinsky2014) to assess whether subjects are paying attention to the content of the survey (e.g., a question that simply directs respondents to check a particular box). In such cases, we will report an analysis excluding the "inattentive" respondents (those who answered the screener questions incorrectly) if (1) there is nothing about the treatment that would cause inattention to be more or less common in one treatment arm and (2) we find no evidence that this sample exclusion creates noncomparability between the treatment arms when checks #2-#4 from the section on "Treatment/placebo designs" are performed in this context (classifying "inattentive" respondents as noncompliers). We will also report results from the full sample as a robustness check.
+
+If either condition (1) or condition (2) above is not satisfied, we will not exclude the "inattentive" respondents.
+
 
 # References
 
