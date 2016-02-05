@@ -3,10 +3,10 @@ title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
 date: 'Version 1.04: Dec. 22, 2015'
 output:
-  pdf_document:
-    toc: yes
   html_document:
     theme: cosmo
+    toc: yes
+  pdf_document:
     toc: yes
 bibliography: SOP.bib
 ---
