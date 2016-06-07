@@ -1,7 +1,7 @@
 ---
 title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
-date: 'Version 1.04: Dec. 22, 2015'
+date: 'Version 1.05: June 7, 2016'
 output:
   pdf_document:
     toc: yes
@@ -15,7 +15,7 @@ This standard operating procedures (SOP) document describes the default practice
 
 This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and a.coppock@columbia.edu (Coppock).] or submit an [issue on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version and date.
 
-Many thanks to Peter Aronow, Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Berk Ozler, Anselm Rink, Cyrus Samii, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and Jose Zubizarreta for helpful comments and discussions.
+Many thanks to Peter Aronow, Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Berk Özler, Anselm Rink, Cyrus Samii, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and José Zubizarreta for helpful comments and discussions.
 
 # Preliminary checks on data preparation and study implementation
 
@@ -37,90 +37,428 @@ The following types of checks should be performed and documented before analyses
 
 Any unresolved data preparation or processing issues will be disclosed in a research report or supplementary materials.
 
-# Hypothesis testing
+# Standard errors, confidence intervals, and significance tests
+
+## Bell--McCaffrey adjustment for standard errors and confidence intervals
+
+Many scholars agree that uncertainty due to sampling variability should be communicated not solely via null hypothesis significance testing, but via methods that focus on the magnitude of the estimated effect and the range of magnitudes compatible with the data, such as confidence intervals [@Moher2010; @Vazire2016; @Greenland2016; @Wasserstein2016]. Some journals require or encourage reporting of confidence intervals (CIs), while in others it is more typical to report estimated standard errors (SEs) along with point estimates. SEs are of interest not so much for their own sake as for enabling the construction of CIs and tests [@Efron1986; @Pustejovsky2016]. Thus, if SEs are reported without explicit CIs, they should ideally be accompanied by sufficient information for CI construction, such as the degrees of freedom for the distribution of the t-statistic.
+
+Our default method for SEs, degrees of freedom, and CIs is the Bell--McCaffrey (BM) adjustment [@Bell2002]. @Imbens2016 give a very helpful discussion of the procedure and "recommend that empirical researchers should, as a matter of routine, use the BM confidence
+intervals."^[@Cameron2015, @Pustejovsky2016, and @Young2016 also give helpful discussions and simulation evidence supporting similar adjustments.] Similar to Welch's unequal-variances t-test, the BM adjustment combines a bias-reduced version of the "robust" or "cluster-robust" SE with a Satterthwaite approximation for the degrees of freedom of the t-distribution. PAPs are (as always) free to deviate from this default approach. Our primary goal here is to obtain approximately valid CIs for average treatment effects (where "valid" means that the actual coverage probability equals or exceeds the nominal coverage). A researcher preparing a PAP for a specific experiment may have reason to believe, based on statistical theory and/or simulations, that a simpler method (e.g., using a critical value from the standard normal distribution instead of the t-distribution when the sample is sufficiently large, or using the classical OLS SE when subjects are randomly assigned to two equal-sized groups) will achieve the same goal, that a different approach is needed due to complexities in the experimental design or the point estimation procedure, or that a different approach will yield more precision.
+
+Below, we give example R code (a slight adaptation of Michal Kolesár's `BMlmSE()` function) to perform the BM adjustment given a fitted OLS regression.^[The BM adjustment has been extended to weighted least squares (WLS) regression [@McCaffrey2001; @Pustejovsky2016]. James Pustejovsky's [`clubSandwich`](https://github.com/jepusto/clubSandwich) R package, which implements this extension (among other things), is in active development at the time of this writing. For now, our SOP adopts the BM adjustment for OLS regression as our default and shows how to use OLS with treatment--block interactions instead of WLS to analyze block-randomized experiments with treatment probabilities that vary by block.]
+
+### Example R code for Bell--McCaffrey adjustment
+
+In the following R code, the function `BMlmSE()` takes these arguments:
+
+- `model` (required): An object returned by `lm()`, representing a fitted OLS regression.
+
+- `clustervar` (optional): A factor whose levels correspond to the clusters. If `clustervar` is supplied, the function uses @Bell2002's bias-reduced cluster-robust variance estimator. If `clustervar` is left unspecified (meaning that the user does not want clustered SEs), the function uses the HC2 robust variance estimator. 
+
+- `ell` (optional): A vector specifying a linear combination of coefficients to compute an SE and degrees of freedom for. `ell` must have the same length as the vector of regression coefficients. For example, if `model` is an object returned by `lm(outcome ~ treatment + covariate)`, then `ell = c(0, 1, 0)` specifies that we are only interested in the coefficient on `treatment`. If `ell` is left unspecified, the function computes SEs and degrees of freedom for all coefficients. (The adjusted degrees of freedom will generally be different for each coefficient, unlike the classical OLS degrees of freedom.)
+
+- `IK` (optional): A logical value. If `clustervar` is unspecified, `IK` has no effect on the results. If `clustervar` is supplied, `IK` determines whether the degrees of freedom are computed using @Imbens2016's method (if `IK` is `TRUE` or unspecified) or @Bell2002's method (if `IK` is `FALSE`). Our SOP uses @Bell2002's method.
+
+The function returns a list with these components:
+
+- `Vhat`: The estimated covariance matrix.
+
+- `dof`: The adjusted degrees of freedom. (If `ell` is specified, `dof` is a scalar. If `ell` is unspecified, `dof` is a named vector with one element for each regression coefficient.)
+
+- `adj.se`: The SEs derived from `Vhat` \emph{with} @Imbens2016's additional adjustment to "convert the dof adjustment into a procedure that only adjusts the standard errors." (If `ell` is specified, `adj.se` is a scalar. If `ell` is unspecified, `adj.se` is a named vector with one element for each regression coefficient.) This is \emph{not} our default method. `adj.se` can be multiplied by 1.96 to form the margin of error for a 95% CI. However, multiplying `adj.se` by 1.645 is \emph{not} generally a valid way to form the margin of error for a 90% CI.
+
+- `se`: The SEs derived from `Vhat` \emph{without} @Imbens2016's additional adjustment to "convert the dof adjustment into a procedure that only adjusts the standard errors." (If `ell` is specified, `se` is a scalar. If `ell` is unspecified, `se` is a named vector with one element for each regression coefficient.) This \emph{is} our default method. To form the margin of error for a CI at any confidence level, multiply `se` by the appropriate critical value from the t-distribution with `dof` degrees of freedom. We give example R code for a 95% CI later in this section. If we are not reporting CIs explicitly, we will report `se` together with `dof`.^[Exceptions can be made when `dof` is 500 or greater. Critical values from the t- and normal distributions are then approximately equal, so it is acceptable for a table to report only SEs and note that the corresponding degrees of freedom were always greater than or equal to 500.]
+
+
+- `se.Stata`: The cluster-robust SE computed by the formula that Stata has used [see @Imbens2016]. (If `clustervar` is unspecified, `se.Stata` is `NA`.) This is \emph{not} our default method.
+
+```{r, eval=FALSE}
+## This is a slightly modified version of Michal Kolesar's BM_StandardErrors.R
+## The original file was downloaded from:
+##   https://github.com/kolesarm/Robust-Small-Sample-Standard-Errors
+##   (Latest commit 2a80873 on Aug 26, 2015)
+## We made minor changes for efficiency, as well as two changes that affect the
+## code's functionality:
+## 1) MatSqrtInverse() now stops with an error message if its argument is not of
+##    full rank:
+##    "Bell-McCaffrey SE undefined. This happens, e.g., when a dummy regressor is 1
+##     for one cluster and 0 otherwise."
+## 2) The list returned by BMlmSE() now includes "se".
+
+# The MIT License (MIT)
+# 
+# Copyright (c) 2015 Michal Kolesar
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+## Compute Bell-McCaffrey Standard Errors
+library(sandwich)
+library(Matrix)
+
+message1 <- paste0(
+    'Bell-McCaffrey SE undefined. This happens, e.g., when a dummy regressor is 1 ',
+    'for one cluster and 0 otherwise.'
+)
+
+MatSqrtInverse <- function(A) {
+    ##  Compute the inverse square root of a matrix
+    if (rankMatrix(A) < NROW(A)) stop(message1)
+    ei <- eigen(A, symmetric = TRUE)
+    d2 <- 1/sqrt(ei$values)
+    ## diag(d2) is d2 x d2 identity if d2 is scalar, instead we want 1x1 matrix
+    ei$vectors %*% (if (length(d2)==1) d2 else diag(d2)) %*% t(ei$vectors)
+}
+
+BMlmSE <- function(model, clustervar=NULL, ell=NULL, IK=TRUE) {
+    X <- model.matrix(model)
+    sum.model <- summary.lm(model)
+    n <- sum(sum.model$df[1:2])
+    K <- model$rank
+    XXinv <- sum.model$cov.unscaled # XX^{-1}
+    u <- residuals(model)
+
+    df <- function(GG) {                # Compute DoF given G'*Omega*G
+        sum(diag(GG))^2 / sum(GG * GG)
+    }
+
+    if(is.null(clustervar)) {           # no clustering
+        Vhat <- vcovHC(model, type="HC2")
+        Vhat.Stata <- Vhat*NA
+
+        M <- diag(n)-X %*% XXinv %*% t(X)       # annihilator matrix
+        GOG <- function(ell) {           # G'*Omega*G
+            Xtilde <- drop(X %*% XXinv %*% ell / sqrt(diag(M)))
+            crossprod(M * Xtilde)
+        }
+    } else {
+        if(!is.factor(clustervar)) stop("'clustervar' must be a factor")
+
+        ## Stata
+        S <- length(levels(clustervar)) # number clusters
+        uj <- apply(u*X, 2, function(x) tapply(x, clustervar, sum))
+        Vhat.Stata <- S/(S-1) * (n-1)/(n-K) * sandwich(model, meat = crossprod(uj)/n)
+
+        ## LZ2
+        tXs <- function(s) {
+            Xs <- X[clustervar==s, , drop=FALSE]
+            MatSqrtInverse(diag(NROW(Xs))-Xs%*% XXinv %*% t(Xs)) %*% Xs
+        }
+        tX <- lapply(levels(clustervar), tXs) # list of matrices
+
+        tu <- split(u, clustervar)
+        tutX <- sapply(seq_along(tu),function(i) crossprod(tu[[i]],tX[[i]]))
+        Vhat <- sandwich(model, meat = tcrossprod(tutX)/n)
+
+        ## DOF adjustment
+        tHs <- function(s) {
+            Xs <- X[clustervar==s, , drop=FALSE]
+            index <- which(clustervar==s)
+            ss <- outer(rep(0,n),index)     # n x ns matrix of 0
+            ss[cbind(index,1:length(index))] <- 1
+            ss-X %*% XXinv %*% t(Xs)
+        }
+        tH <- lapply(levels(clustervar), tHs) # list of matrices
+
+        Moulton <- function() {
+            ## Moulton estimates
+            ns <- tapply(u, clustervar,length)
+            ssr <- sum(u^2)
+            rho <- max((sum(sapply(seq_along(tu), function(i)
+                sum(tu[[i]] %o% tu[[i]])))-ssr) / (sum(ns^2)-n), 0)
+            c(sig.eps=max(ssr/n - rho, 0), rho=rho)
+        }
+
+        GOG <- function(ell) {
+            G <- sapply(seq_along(tX),
+                        function(i)  tH[[i]] %*% tX[[i]] %*% XXinv %*% ell)
+            GG <- crossprod(G)
+
+            if (IK==TRUE) {            # IK method
+                Gsums <- apply(G, 2, function(x) tapply(x, clustervar, sum)) # Z'*G
+                GG <- Moulton()[1]*GG + Moulton()[2]*crossprod(Gsums)
+            }
+            GG
+        }
+    }
+
+    if (!is.null(ell)) {
+        se <- drop(sqrt(crossprod(ell,Vhat) %*% ell))
+        dof <- df(GOG(ell))
+        se.Stata <- drop(sqrt(crossprod(ell,Vhat.Stata) %*% ell))
+    } else {
+        se <- sqrt(diag(Vhat))
+        dof <- sapply(seq(K), function(k) df(GOG(diag(K)[,k])))
+        se.Stata <- sqrt(diag(Vhat.Stata))
+    }
+    names(dof) <- names(se)
+
+    return(list(vcov=Vhat, dof=dof, adj.se=se*qt(0.975,df=dof)/qnorm(0.975),
+                se=se,
+                se.Stata=se.Stata))
+}
+```
+
+Here is an example of R code using `BMlmSE()` to construct a 95% CI for the average treatment effect (ATE). 
+
+```{r, eval=FALSE}
+## For this example, assume:
+## - We have an experiment with simple or complete randomization of subjects.
+##   10 subjects are assigned to treatment and 5 to control.
+## - Our PAP specified that we would estimate ATE using an OLS regression of the
+##   outcome on the treatment dummy and a single covariate, but did not specify
+##   how we would estimate the SE or construct a CI.
+
+# Generate fake data
+
+set.seed(1234567)
+treatment <- c(rep(1, 10), rep(0, 5))
+covariate <- rnorm(15)
+outcome <- treatment + rnorm(15)
+
+# Use lm() to fit an OLS regression
+
+ols.fit <- lm(outcome ~ treatment + covariate, singular.ok = FALSE)
+
+# Use BMlmSE() to compute the BM SE and degrees of freedom
+
+## The argument ell must have the same length as the vector of regression coefficients.
+## In this example, ell = c(0, 1, 0) indicates that we only want to compute
+## the Bell-McCaffrey SE and degrees of freedom for the linear combination
+##   0 * intercept + 1 * (coef on treatment) + 0 * (coef on covariate),
+## i.e., the coefficient on treatment.
+
+bm <- BMlmSE(model = ols.fit, ell = c(0, 1, 0))
+
+# Construct a 95% confidence interval for the average treatment effect
+
+point.estimate <- coef(ols.fit)['treatment']
+
+critical.value <- qt(0.975, df = bm$dof)  # Critical value for 95% CI
+margin.of.error <- critical.value * bm$se
+
+ci = c(point.estimate - margin.of.error, point.estimate + margin.of.error)
+names(ci) = c('lower','upper')
+
+point.estimate  # Estimated average treatment effect
+bm$se           # HC2 robust SE
+bm$dof          # Bell-McCaffrey degrees of freedom
+ci              # Bell-McCaffrey confidence interval
+```
+
+### Avoiding regression models that do not allow the BM adjustment
+
+The BM adjustment's SE estimators are undefined for some regression models:
+
+- The HC2 robust SE (returned by `BMlmSE()` when `clustervar` is unspecified) is undefined if any observation has a leverage of 1, which happens when the regressors include a dummy variable that equals 1 for that observation and 0 for all others (or vice versa), and in other scenarios where the values of the regressors are such that the OLS solution will always fit that observation perfectly, no matter what the outcome values are.^[For example, if the sample includes only one libertarian entomologist, and the regressors include a dummy for "libertarian" and a dummy for "libertarian non-entomologist," then the libertarian entomologist's observation has a leverage of 1.] In this situation, `BMlmSE()` returns values of `NaN` (Not a Number).
+
+- The BM cluster-robust SE (returned by `BMlmSE()` when `clustervar` is supplied) is undefined when the matrix $I_i - H_{ii}$ [@Bell2002, p. 7] for some cluster $i$ is not of full rank, which happens, for example, when the regressors include a variable that would be constant if one cluster were dropped (e.g., a dummy variable for one cluster or for a subset of one cluster). In this situation, `BMlmSE()` prints the following error message: "Bell-McCaffrey SE undefined. This happens, e.g., when a dummy regressor is 1 for one cluster and 0 otherwise."^[@Pustejovsky2016 provide a bias-reduced cluster-robust SE estimator that is always well-defined and is implemented in the [`clubSandwich`](https://github.com/jepusto/clubSandwich) R package. We have not yet used `clubSandwich`, but this seems a promising development.]
+
+We think these situations can usually be prevented by specifying parsimonious regression models and avoiding dummy covariates that identify one or two subjects or clusters. Also, they can be detected by attempting the BM adjustment with mock outcome data before treatment effects are estimated (since the leverages and the $I_i - H_{ii}$ matrices depend only on the regressors, not the outcome). If the PAP has specified a regression model that makes the BM adjustment undefined, we will use mock outcome data to help determine which covariates need to be dropped to make the BM adjustment well-defined.
+
+## Use of clustered standard errors
+
+Our default approach is to use clustered SEs if and only if a regression includes multiple observations for some randomization units, and in that case, to cluster the SEs at the level of the randomization unit (not at any higher level). For example:
+
+- When individual subjects are randomly assigned to treatment, the randomization unit is the subject. In the typical case where a regression includes only one observation per subject, we will not use clustered SEs. If a regression includes multiple observations per subject, we will use SEs clustered at the subject level. 
+
+- When households are randomly assigned to treatment, the randomization unit is the household. If a regression includes only one observation per household, we will not use clustered SEs. If a regression includes multiple observations per household (e.g., one observation per person, with more than one person in some households), we will use SEs clustered at the household level (not at any higher level such as county or state).
+
+In cases where we use clustered SEs, our default SE estimator is @Bell2002's bias-reduced cluster-robust SE. The SE and associated degrees of freedom can be computed using the `BMlmSE()` function above, with `IK = FALSE` and `clustervar` set to a factor variable whose values identify the clusters. (For example, if `hhid` is a variable that uniquely identifies households, then one can supply the argument `clustervar = as.factor(hhid)` to `BMlmSE()` to compute robust SEs clustered at the household level.)
+
+## Taking block randomization into account in SEs and CIs
+
+Additional issues arise in block-randomized experiments:
+
+1. If treatment assignment probabilities vary by block, simple comparisons of the treatment and control groups' average outcomes do not yield unbiased or consistent estimates of treatment effects. Some methods to address this problem are discussed in @Gerber2012 (sections 3.6.1 and 4.5).
+
+2. Regardless of whether treatment assignment probabilities vary by block, SEs and CIs may be too conservative if they do not take the blocking into account [@Bruhn2009].^[Blocking tends to improve precision if the blocking criterion is correlated with the outcome. Thus, SEs that ignore the effects of blocking tend to be conservative. However, if the
+blocking criterion is only weakly correlated with the outcome, then this conservatism is only mild, and
+accounting for blocking may reduce power by reducing degrees of freedom [@Imbens2011]. Thus, if blocking is done for logistical reasons and not for precision improvement, a researcher preparing a PAP may decide to deviate from the SOP and ignore the blocking in the analysis.]
+
+Weighted regression [@Gerber2012, pp. 116--117] addresses issue #1 but does not by itself address issue #2. Taking a weighted average of block-specific treatment effect estimates and estimating its SE [@Gerber2012, p. 77] is a possible way to address both issues. It is not obvious how to calculate the degrees of freedom for the distribution of the resulting t-statistic (an issue that can matter in small samples). However, OLS regression with treatment--block interactions [@Schochet2010, section 4.2.3] can reproduce both the weighted average point estimate and its estimated SE. Let $B$ be the number of blocks, and let $X_b$ be a dummy for block $b$, for $b = 1, \ldots,
+  B - 1$ (omitting the dummy for block $B$ to avoid collinearity). To
+  compute a weighted average of the block-specific treatment--control differences in
+  means, with weight $w_b$ on block $b$ and $\sum_{b=1}^B w_b = 1$, one can use the estimated coefficient on the treatment dummy $T$ in an OLS regression of the outcome $Y$ on $T$, $X_1, \ldots, X_{B-1}$, and $T
+  \cdot (X_1 - w_1), \ldots, T \cdot (X_{B-1} - w_{B-1})$. In simulations, we have found that the HC2 robust SE for the coefficient on $T$ in this regression is equivalent to the SE estimator in @Gerber2012 (p. 77).
+
+Our default methods for analyzing block-randomized experiments rely on OLS regression, using the Bell--McCaffrey adjustment for SEs, degrees of freedom, and CIs.
+Whether we include block dummies and treatment--block interactions in the regression will depend on sample sizes and other aspects of the experimental design, as described below.
+We do not attempt to cover every possible design here, but focus on some commonly used ones. The subsections that follow assume there are only two treatment arms (i.e., either one treatment group and one control group, or two treatment groups without an additional control group). We plan to cover designs with three or more treatment arms in a future version of the SOP.
+
+As always, PAPs are free to deviate from the default methods described below. They may also use these defaults as a starting point and add other covariates to the regression model.
+
+In what follows, let $\overline{X}_b$ denote the sample mean of $X_b$, for $b = 1, \ldots,
+  B - 1$. That is, $\overline{X}_b = N_b / N$, where $N$ is the total number of subjects in the experimental sample and $N_b$ is the number of subjects in block $b$.
+
+### Block randomization of individuals, with treatment assignment probabilities constant across blocks
+
+If each block has at least 5 individuals assigned to each treatment arm,^[There are two main reasons for requiring a minimum number of individuals per treatment arm per block here: (1) If some block has fewer than 2 observations in some arm, the usual SE estimator for a weighted average of block-specific differences in means [@Gerber2012, p. 77] is undefined and so is the HC2 robust SE for the equivalent regression coefficient. We use a minimum of 5 to allow for some attrition. (2) If attrition reduces the number of observations to 1 for some block, then including that block's dummy is equivalent to dropping the observation. E.g., in a matched pair design, if pair dummies are included in the regression, then whenever one subject in a pair has missing outcome data, the other subject's observation is effectively dropped. Dropping such observations can lead to bias [@Gerber2012, pp. 241--243].] we will estimate the average treatment effect by running an OLS regression of $Y$ on $T$, $X_1, \ldots, X_{B-1}$, and $T
+  \cdot (X_1 - \overline{X}_1), \ldots, T \cdot (X_{B-1} - \overline{X}_{B-1})$.
+
+If some block has fewer than 5 individuals assigned to some treatment arm:
+
+- If the blocks were formed by coarsening a continuous variable $X$, we will estimate the ATE by running an OLS regression of $Y$ on $T$, $X$, and $T \cdot (X - \overline{X})$, where $\overline{X}$ is the sample mean of $X$.
+
+- Otherwise, we will not account for blocking in our SEs and CIs unless the PAP specified a method for doing so.
+
+
+### Block randomization of individuals, with varying treatment assignment probabilities
+
+If each block has at least 5 individuals assigned to each treatment arm:
+
+1. Except in the extreme case described in item #2 below, we will use the same method as in the preceding subsection: estimate the average treatment effect by running an OLS regression of $Y$ on $T$, $X_1, \ldots, X_{B-1}$, and $T
+  \cdot (X_1 - \overline{X}_1), \ldots, T \cdot (X_{B-1} - \overline{X}_{B-1})$.
+
+2. An alternative approach, sometimes called the least-squares dummy variable (LSDV) method, is to run an OLS regression of the outcome on treatment and block dummies (without interactions). The estimand for the LSDV method is a weighted ATE, giving each block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in the block and $P_j$ is their probability of assignment to treatment [@Angrist1998, p. 256; @Angrist2009, p. 75; @Gerber2012, p. 119]. In contrast, the estimand for the method in item #1 above is the unweighted ATE, which gives block $j$ a total weight proportional to $N_j$. In the extreme case where there is at least one block $j$ such that
+$$ \frac{N_j}{\sum_j N_j} > 20 \, \frac{N_j P_j (1-P_j)}{\sum_j N_j P_j (1-P_j)}, $$
+we will use LSDV and we will explain to readers that we pre-specified a weighted ATE as our estimand in an attempt to improve precision.^[For example, imagine a block-randomized experiment with two blocks: 500 of 1,000 subjects in block 1 are assigned to treatment, while 5 of 100,000 in block 2 are assigned to treatment.  The unweighted ATE places a total weight of $N_2 / (N_1 + N_2) = 99.01\%$ on the second, relatively uninformative block, while the LSDV estimand gives the same block a total weight of $N_2 P_2 (1 - P_2) / [N_1 P_1 (1 - P_1) + N_2 P_2 (1 - P_2)] = 1.96\%$. Thus, block 2 is weighted over 50 times more heavily in the ATE than in the LSDV estimand. In this situation, we would use LSDV.] See the section "Analysis of block randomized experiments with treatment probabilities that vary by block" under "Using covariates in analysis" for discussion of additional issues that arise when the LSDV approach is used.
+
+If some block has fewer than 5 individuals assigned to some treatment arm, then, in the extreme case described in item #2 above, we will again use the LSDV method, but otherwise our default methods are:
+
+- If each block has a different treatment probability, use the same method as in item #1 above.
+
+- Otherwise, reduce the number of dummy variables in the regression by replacing block dummies with treatment probability dummies. Let $C < B$ be the number of possible treatment probabilities; let $Z_1, \ldots, Z_{C-1}$ be a set of dummy variables for all but one treatment probability; and let $\overline{Z}_c$ be the sample mean of $Z_c$, for $c = 1, \ldots, C-1$. If the blocks were formed by coarsening a continuous variable $X$, estimate the average treatment effect by running an OLS regression of $Y$ on $T$, $Z_1, \ldots, Z_{C-1}$, $X$, $T
+  \cdot (Z_1 - \overline{Z}_1), \ldots, T \cdot (Z_{C-1} - \overline{Z}_{C-1})$, and $T \cdot (X - \overline{X})$, where $\overline{X}$ is the sample mean of $X$. If the blocks were not formed by coarsening a continuous variable, use the same approach but omit the terms $X$ and $T \cdot (X - \overline{X})$.
+
+### Block-randomized treatment/placebo designs
+
+In a treatment/placebo design [@Gerber2012, pp. 161-164], the planned analysis compares treatment group compliers with placebo group compliers. Block randomization (if used) can ensure that the block composition of the entire treatment group matches that of the entire placebo group, but cannot ensure the same degree of balance between treatment group compliers and placebo group compliers. In fact, it is possible for a block to contain one or more compliers in the treatment group but none in the placebo group, or vice versa. We therefore do not use block dummies in our default methods for analyzing block-randomized treatment/placebo experiments.
+
+If the treatment assignment probability is constant across blocks:
+
+- If the blocks were formed by coarsening a continuous variable $X$, we will estimate the ATE by running an OLS regression of $Y$ on $T$, $X$, and $T \cdot (X - \overline{X})$, where $\overline{X}$ is the mean of $X$ among all compliers in the treatment and placebo groups.
+
+- Otherwise, we will not account for blocking in our SEs and CIs unless the PAP specified a method for doing so.
+
+If the treatment assignment probabilities vary across blocks, we will use the same method as in the final bullet of the above section on "Block randomization of individuals, with varying treatment assignment probabilities," except that $\overline{Z}_c$ and $\overline{X}$ should be defined as the means of $Z_c$ and $X$ among compliers only.
+
+
+### Block randomization of clusters
+
+In a cluster-randomized experiment, if the number of individuals varies across clusters, researchers should decide whether their estimand gives equal weight to each individual or to each cluster [@Green2008; @Imbens2013]. If the estimand gives equal weight to each cluster (or if the clusters are all of the same size, in which case the two estimands are equivalent), it is straightforward to adapt the methods from the sections above on "Block randomization of individuals": Using cluster-level averages as the observations, run an OLS regression with one observation per cluster, and substitute "cluster" for "individual" or "subject" in the descriptions of the methods (e.g., change "If each block has at least 5 individuals assigned to each treatment arm" to "If each block has at least 5 clusters assigned to each treatment arm").
+
+If the cluster sizes vary and the estimand gives equal weight to each individual, our default methods use OLS regression with one observation per individual (and, as noted earlier, our default SE estimator in this case is the @Bell2002 bias-reduced cluster-robust SE):
+
+1. If each block has at least 20 clusters assigned to each treatment arm,^[There are three main reasons for requiring a minimum number of clusters per treatment arm per block here. Two of them are analogous to those given in a footnote in the section on "Block randomization of individuals, with treatment assignment probabilities constant across
+blocks." Additionally, when cluster sizes vary within blocks and the number of clusters per block is small, controlling for blocks may increase bias [@Middleton2015].] or if each block has a different treatment probability,
+estimate the average treatment effect by running an OLS regression of $Y$ on $T$, $X_1, \ldots, X_{B-1}$, and $T
+  \cdot (X_1 - \overline{X}_1), \ldots, T \cdot (X_{B-1} - \overline{X}_{B-1})$.
+
+2. If the conditions for item #1 are not met:
+
+- If the treatment assignment probability is constant across blocks: If the blocks were formed by coarsening a continuous variable $X$, we will estimate the ATE by running an OLS regression of $Y$ on $T$, $X$, and $T \cdot (X - \overline{X})$, where $\overline{X}$ is the sample mean of $X$.^[In some cases, precision may be improved by estimating a regression model that allows the between-cluster relationship between $X$ and $Y$ to differ from the within-cluster relationship [@Raudenbush1997, pp. 181-182; @Klar2004]. We have not adopted such a regression as our default method, but it may be worth considering for some PAPs.] If the blocks were not formed by coarsening a continuous variable, we will not account for blocking in our SEs and CIs unless the PAP specified a method for doing so. (If no regression model is specified in the PAP, we will regress $Y$ on $T$.)
+
+- If the treatment assignment probability varies across blocks: If the blocks were formed by coarsening a continuous variable $X$, we will estimate the ATE by running an OLS regression of $Y$ on $T$, $Z_1, \ldots, Z_{C-1}$, $X$, $T
+  \cdot (Z_1 - \overline{Z}_1), \ldots, T \cdot (Z_{C-1} - \overline{Z}_{C-1})$, and $T \cdot (X - \overline{X})$ (where, as before, $C$ is the the number of possible treatment probabilities, $Z_1, \ldots, Z_{C-1}$ are a set of dummy variables for all but one treatment probability, and overlines denote sample means). If the blocks were not formed by coarsening a continuous variable, we will use the same approach but omit the terms $X$ and $T \cdot (X - \overline{X})$.
 
 ## One-tailed or two-tailed test?
 
-We will report two-tailed hypothesis tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 (p. 70) discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests: for example, to reject the null if the result was
+We will report two-tailed significance tests unless the PAP specifies a one-tailed test or some other approach.^[@Olken2015 (p. 70) discusses one other approach: "An interesting hybrid alternative would be to pre-specify asymmetric tests: for example, to reject the null if the result was
 in the bottom 1 percent of the distribution or in the top 4 percent, or the bottom 0.5 and the top 4.5 percent, and so
 on. These asymmetric tests would gain much of the statistical power from one-sided tests, but still be set up
-statistically to reject the null in the presence of very large negative results." See also @Tukey1993 (p. 276).]
+statistically to reject the null in the presence of very large negative results." See also @Tukey1993 (p. 276) for a sympathetic view and @Hurlbert2012 for a critical view of asymmetric tests.]
 
-## Use of permutation methods
+## Studentized permutation test
 
-For significance tests and p-values, we will either (1) report Studentized permutation tests or (2) use permutation methods to check the accuracy of asymptotic approximations.
+For significance tests and p-values, our default method is a Studentized permutation test [@Chung2013; @Janssen1997; @Romano2009, section 3] that compares the t-statistic for the average treatment effect (i.e., the estimated ATE divided by its estimated SE) with its empirical distribution under random reassignments of treatment that follow the same randomization scheme as the actual experiment.^[This test differs from the classic Fisher--Pitman permutation test in that the test statistic is the t-statistic, not the estimated ATE itself.] We will use 10,000 randomizations and the random number seed 1234567. P-values for two-tailed tests will be computed according to the following convention: "In general, if you want a two-sided P-value, compute both one-sided P-values, double the smaller one, and take the minimum of this value and 1" [@Rosenbaum2010, p. 33].
 
-For an example of (1), see below. The Studentized permutation t-test (@Janssen1997) compares a heteroskedasticity-robust t-statistic (instead of the estimated average treatment effect itself) with its empirical distribution under random reassignments of treatment.^[See also @Romano2009 and @Chung2013.] Unless otherwise specified in the PAP, our Studentized permutation t-tests will use the t-statistic based on the HC0 or HC1 robust standard error estimator,^[Since HC1 is just HC0 multiplied by a constant, the choice between these two estimators has no effect on the permutation test. @Mackinnon2013 (pp. 456-458) found in simulations that the power of Studentized bootstrap tests "decreases monotonically from HC1 to HC2, HC3, and finally HC4. ... The best HCCME [heteroskedasticity-consistent covariance matrix estimator] for asymptotic inference may not be the best one for bootstrap
-inference." We conjecture that, similarly, Studentized permutation tests tend to have more power with HC0 or HC1 than with HC2, HC3, or HC4.] and p-values for two-tailed tests will be computed according to the following convention: "In general, if you want a two-sided P-value, compute both one-sided P-values, double the smaller one, and take the minimum of this value and 1" (@Rosenbaum2010, p. 33).
+Here is an example of R code for a Studentized permutation test.
 
-For an example of (2), see @Lin2013 [pp. 309-313], where a simulation permuting the treatment indicator is used to check the validity of confidence intervals based on robust standard errors.
+```{r, eval=FALSE}
+## For this example, assume:
+## - We have an experiment with complete randomization of 200 subjects.
+##   50 subjects are assigned to treatment and 150 to control.
+## - Our PAP specified that we would estimate ATE using an OLS regression of the
+##   outcome on the treatment dummy and a single covariate.
+## - Either the PAP specified that we would use the HC2 SE, or
+##   it did not specify an SE estimator so we are following the SOP and using HC2.
 
-For all permutation methods, we will use at least 10,000 randomizations and the random number seed 1234567.
+library(randomizr)
+library(sandwich)
 
-## Example: Studentized Permutation Test
-
-```{r, cache=TRUE}
-suppressMessages({
-  library(randomizr)
-  library(sandwich)
-  library(lmtest)
-})
 set.seed(1234567)
 
-N <- 200
+n.rands <- 10000  # no. of randomizations for permutation test
+N <- 200          # no. of subjects
+N.treated <- 50   # no. of subjects assigned to treatment 
 
-# Create potential outcomes
-Y0 <- rnorm(N)
-Y1 <- Y0 + 0.25
+## Generate "observed" data for this example
 
-# Conduct random assignment
-Z <- complete_ra(N, m = 50)
-Y_obs <- Y1*Z + Y0*(1-Z)
+treated <- c(rep(1, N.treated), rep(0, N - N.treated))
+covariate <- rnorm(N)
+outcome <- 0.1 * treated + rnorm(N)
 
-# Conduct Estimation
-fit <- lm(Y_obs ~ Z)
+## Run the pre-specified regression with the observed data.
+## Save the observed t-statistic for ATE.
 
-# Obtain Heteroskedasticity-robust t-statistic
-t_obs <- coeftest(fit, vcov = vcovHC(fit, type = 'HC0'))['Z','t value']
+fit <- lm(outcome ~ treated + covariate, singular.ok = FALSE)
 
-# Conduct simulation
-sims <- 10000
-t_sims <- rep(NA, sims)
+est.ate <- coef(fit)['treated']  # Estimated average treatment effect
+se <- sqrt( vcovHC(fit, type = 'HC2')['treated','treated'] )  # HC2 robust SE
 
-for(i in 1:sims){
-  Z_sim <- complete_ra(N, m = 50)
-  fit_sim <- lm(Y_obs ~ Z_sim)
-  t_sims[i] <- coeftest(fit_sim, vcov = vcovHC(fit_sim, type = 'HC0'))['Z_sim','t value']
+t.observed <- est.ate / se
+
+# Permutation test
+
+t.sim <- rep(NA, n.rands)
+
+for (i in 1:n.rands) {
+  ## Simulate random assignment of treatment
+
+  treated.sim <- complete_ra(N, m = N.treated)
+
+  ## Run the pre-specified regression with the simulated data.
+  ## Save the simulated t-statistic for ATE.
+  
+  fit.sim <- lm(outcome ~ treated.sim + covariate, singular.ok = FALSE)
+  est.ate.sim <- coef(fit.sim)['treated.sim']
+  se.sim <- sqrt( vcovHC(fit.sim, type = 'HC2')['treated.sim','treated.sim'] )
+  
+  t.sim[i] <- est.ate.sim / se.sim
 }
 
-# "In general, if you want a two-sided P-value, compute both one-sided P-values, 
-#  double the smaller one, and take the minimum of this value and 1."
-#    Rosenbaum (2010), Design of Observational Studies, p. 33, note 2
-# (Other options exist, but this is our default.)
+## "In general, if you want a two-sided P-value, compute both one-sided P-values, 
+##  double the smaller one, and take the minimum of this value and 1."
+##    Rosenbaum (2010), Design of Observational Studies, p. 33, note 2
+## (Other options exist, but this is our default.)
 
-p.left  <- mean(t_sims <= t_obs)
-p.right <- mean(t_sims >= t_obs)
+p.left  <- mean(t.sim <= t.observed)
+p.right <- mean(t.sim >= t.observed)
 
-p <- min(2 * min(p.left, p.right), 1)
-p
-
-hist(t_sims)
-abline(v = t_obs, lwd=2, col="red")
+p.value <- min(2 * min(p.left, p.right), 1)
+p.value
 ```
 
-
+We recommend attempting the permutation test with mock outcome data and actual covariate data before analyzing the actual outcome data. The mock permutation test may reveal that on some randomizations, the t-statistic cannot be computed because the regressors are collinear or because the HC2 or BM SE is undefined (see the section above on "Avoiding regression models that do not allow the BM adjustment"). In such cases, covariates should be dropped from the model until the mock permutation test runs without errors.
 
 # Using covariates in analysis
 
 ## Default methods for estimating average treatment effects
 
-Estimation methods for the primary analysis will normally have been specified in the PAP. For reference in what follows, here we describe our default methods for a unit-randomized experiment with N subjects. Let $M < N$ denote the largest integer such that at least $M$ subjects are assigned to each arm.
+Estimation methods for the primary analysis will normally have been specified in the PAP. For reference in what follows, here we describe our default methods for an experiment with random assignment of individuals. Let $N$ be the number of subjects, and let $M < N$ denote the largest integer such that at least $M$ subjects are assigned to each arm.
 
 - If $M \geq 20$ , we use least squares regression of Y on T, X, and T * X, where Y is the outcome, T is the treatment indicator, and X is a set of one or more mean-centered covariates (see "Choice of covariates" below for guidelines on the choice and number of covariates). The coefficient on T estimates the average effect of assignment to treatment. See @Lin2012a for an informal description of this estimator.
 
 - If $M < 20 \leq N$ , we use least squares regression of Y on T and X.
 
-- If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in Gerber and Green discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
+- If $N < 20$, we use either difference-in-differences or difference-in-means. (Section 4.1 in @Gerber2012 discusses the efficiency comparison between these two estimators. Again, the choice will typically be specified in the PAP.)
 
 ## Example: Default Covariate Adjustment Procedure
 ```{r}
@@ -149,13 +487,13 @@ X1_c <- X1 - mean(X1)
 X2_c <- X2 - mean(X2)
 
 # Conduct Estimation
-fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c))
+fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c), singular.ok = FALSE)
 
 # Robust Standard Errors
 coeftest(fit_adj, vcov = vcovHC(fit_adj, type = "HC2"))
 
 # Compare to unadjusted model
-fit_unadj <- lm(Y_obs ~ Z)
+fit_unadj <- lm(Y_obs ~ Z, singular.ok = FALSE)
 coeftest(fit_unadj, vcov = vcovHC(fit_unadj, type = "HC2"))
 ```
 
@@ -239,7 +577,7 @@ X2_obs_c <- X2_obs - mean(X2_obs)
 X2_missing_c <- X2_missing - mean(X2_missing)
 
 # Conduct Estimation
-fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c + X2_missing_c))
+fit_adj <- lm(Y_obs ~ Z + Z*(X1_c + X2_c + X2_missing_c), singular.ok = FALSE)
 
 # Robust Standard Errors
 coeftest(fit_adj, vcov = vcovHC(fit_adj, type = "HC2"))
@@ -253,13 +591,13 @@ Our primary analysis will be based on a pre-specified covariate-adjusted estimat
 
 For binary or count-data outcomes, some referees prefer estimates based on nonlinear models such as logit, probit, or Poisson regression. Although we disagree with this preference (the robustness of least squares adjustment in RCTs is supported by both theory and simulation evidence),[^9] we will provide supplementary estimates derived from nonlinear models (using marginal effects calculations) if requested by referees. We prefer logits to probits because adjustment based on the probit MLE is not misspecification-robust.[^10]
 
-[^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 or @Judkins2014.
+[^9]: For asymptotic theory, see @Lin2013, where all the results are applicable to both discrete and continuous outcomes. For simulations, see @Humphreys2013 and @Judkins2016.
 
 [^10]: @Freedman2008; @Firth1998. Lin gave an informal discussion in a [comment on the _Mostly Harmless Econometrics_ blog](http://web.archive.org/web/20150505183845/http://www.mostlyharmlesseconometrics.com/2012/07/probit-better-than-lpm/).
 
 ## Covariate imbalance and the detection of administrative errors
 
-We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero (@Wooldridge2010, p. 62). The covariates to be included in the regression should be specified in the PAP. (For voter turnout experiments, the SOP section "Issues specific to voter turnout experiments" gives a default set of covariates in case the PAP fails to specify the choice.) If the experiment is block-randomized with treatment probabilities that vary by block, we will also include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
+We will perform a statistical test to judge whether observed covariate imbalances are larger than would normally be expected from chance alone. In an experiment with a binary treatment and a constant probability of assignment to treatment, the test involves a regression of the treatment indicator on the covariates and calculation of a heteroskedasticity-robust Wald statistic for the hypothesis that all the coefficients on the covariates are zero [@Wooldridge2010, p. 62]. The covariates to be included in the regression should be specified in the PAP. (For voter turnout experiments, the SOP section "Issues specific to voter turnout experiments" gives a default set of covariates in case the PAP fails to specify the choice.) If the experiment is block-randomized with treatment probabilities that vary by block, we will also include dummy variables for the varying treatment probabilities in the regression, and we will test the hypothesis that all coefficients on the covariates, excluding the treatment probability dummies, are zero.
 
 We will use a permutation test (randomization inference) to calculate the p-value associated with the Wald statistic.
 
@@ -290,7 +628,7 @@ education <- sample(10:20, N, replace=TRUE)
 Z <- complete_ra(N, 500)
 
 # Regress treatment on covariates
-fit <- lm(Z ~ gender + age + lincome + party + education)
+fit <- lm(Z ~ gender + age + lincome + party + education, singular.ok = FALSE)
 
 # Obtain observed heteroskedasticity-robust Wald statistic
 # See Wooldridge (2010), p. 62
@@ -311,7 +649,7 @@ W_sims <- numeric(sims)
 
 for(i in 1:sims){
   Z_sim <- complete_ra(N, 500)
-  fit_sim <- lm(Z_sim ~ gender + age + lincome + party + education)
+  fit_sim <- lm(Z_sim ~ gender + age + lincome + party + education, singular.ok = FALSE)
 
   Rbeta.hat <- coef(fit_sim)[-1]
   RVR <- vcovHC(fit_sim, type <- 'HC0')[-1,-1]
@@ -328,27 +666,17 @@ abline(v = W_obs, lwd=3, col="red")
 
 ## Analysis of block randomized experiments with treatment probabilities that vary by block
 
-### Estimating treatment effects
-
-When treatment assignment probabilities vary by block, we will use weighted least squares regression with inverse probability-of-assignment weights (IPW) to estimate the average treatment effect (ATE), except in extreme cases (defined below).  See @Gerber2012, section 4.5 for discussion of the IPW method.
-
-An alternative approach, sometimes called the least-squares dummy variable (LSDV) method, is to run an OLS regression of the outcome on treatment, block indicators, and covariates. The estimand for the LSDV method is a weighted ATE, giving each block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in the block and $P_j$ is their probability of assignment to treatment (@Angrist1998, p. 256; @Angrist2009, p. 75; @Gerber2012, p. 119). In contrast, the estimand for the IPW method is the unweighted ATE, which gives block $j$ a total weight proportional to $N_j$. We will use IPW except in the extreme case where there is at least one block $j$ such that
-
-$$ \frac{N_j}{\sum_j N_j} > 20 \, \frac{N_j P_j (1-P_j)}{\sum_j N_j P_j (1-P_j)}. $$
-
-In that case, we will use LSDV and we will explain to readers that we pre-specified a weighted ATE as our estimand in an attempt to improve precision. For background, see @Angrist2009 (p. 76, footnote 23) and @Gerber2012 (pp. 119-120).
-
-For example, imagine a block-randomized experiment with two blocks: 500 of 1,000 subjects in block 1 are assigned to treatment, while 5 of 100,000 in block 2 are assigned to treatment.  The IPW estimand (the unweighted ATE) places a total weight of $N_2 / (N_1 + N_2) = 99.01\%$ on the second, relatively uninformative block, while the LSDV estimand gives the same block a total weight of $N_2 P_2 (1 - P_2) / [N_1 P_1 (1 - P_1) + N_2 P_2 (1 - P_2)] = 1.96\%$. Thus, block 2 is weighted over 50 times more heavily by IPW than by LSDV. In this situation, we would use LSDV instead of IPW.
+The section "Taking block randomization into account in SEs and CIs" describes our default methods for estimating treatment effects in block randomized experiments and explains that we would use the least-squares dummy variable (LSDV) method in certain extreme cases.
 
 ### Presentation of statistics describing covariate balance
 
 For the formal test for covariate balance, see the section above on "Covariate imbalance and the detection of administrative errors".
 
-For tables or figures describing covariate balance, we will follow the advice in @Gerber2012, pp. 120-121, with the following amendment to their footnote 19: If LSDV is the primary treatment effect estimator, then instead of using the weights in their equation (4.12), give each treatment group observation a weight proportional to $1 - P_j$ and each control group observation a weight proportional to $P_j$. (This results in a weighted treatment group mean and weighted control group mean that give block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, which matches the LSDV estimand.)
+For tables or figures describing covariate balance, we will follow the advice in @Gerber2012, pp. 120-121, with the following amendment to their footnote 19: If LSDV is the primary treatment effect estimator, then instead of using the weights in their equation (4.12), give each treatment group observation in block $j$ a weight proportional to $1 - P_j$, and give each control group observation in that block a weight proportional to $P_j$, where $P_j$ is the probability of assignment to treatment. (This results in a weighted treatment group mean and weighted control group mean that give block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, where $N_j$ is the number of subjects in block $j$. Thus, the weighting is the same as in the LSDV estimand.)
 
 ### Presentation of statistics describing overall baseline characteristics of the study sample (not separated by treatment arm)
 
-If the primary treatment effect estimator is IPW, summary statistics on overall characteristics of the sample should be unweighted, since the IPW estimand is the unweighted ATE. If LSDV is the primary treatment effect estimator, the summary statistics should give each observation a weight proportional to $P_j (1 - P_j)$, since this gives block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, which matches the LSDV estimand.
+If LSDV is the primary treatment effect estimator, the summary statistics should give each observation a weight proportional to $P_j (1 - P_j)$, since this gives block $j$ a total weight proportional to $N_j P_j (1 - P_j)$, the same as in the LSDV estimand.
 
 # Sample exclusions and the coding of outcome variables
 
@@ -370,13 +698,15 @@ In experiments that encounter noncompliance with assigned treatments, our analys
 
 ## Treatment/placebo designs
 
+See also the subsection "Block-randomized treatment-placebo designs" under "Taking block randomization into account in SEs and CIs".
+
 In a treatment/placebo design, subjects are randomly assigned to be encouraged to receive either the treatment or a placebo [@Gerber2012, pp. 161-164]. Those who actually receive the treatment or placebo are revealed to be compliers. The intended analysis compares the outcomes of treatment group compliers vs. placebo group compliers. However, if the encouragement efforts differ between the two arms, the two groups of compliers may not be comparable. To evaluate their comparability, we will perform the following checks:
 
 1. Implementation: Were the treatment and placebo administered by the same personnel? Were these personnel blinded to subjects’ random assignments until after compliance status was determined, or if not, were the treatment and placebo administered symmetrically in their timing, place, and manner?
 
 2. Comparison of compliance rates across arms: We will perform a two-tailed unequal-variances t-test of the hypothesis that treatment assignment does not affect the compliance rate.
 
-3. Comparison of compliers’ baseline characteristics across arms: Using compliers only, we will estimate a linear regression of the treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero.
+3. Comparison of compliers’ baseline characteristics across arms: Using compliers only, we will estimate a linear regression of the treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test [@Wooldridge2010, p. 62] of the hypothesis that all coefficients on the covariates are zero.
 
 4. Comparison of noncompliers' outcomes across arms: Using noncompliers only, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment assignment does not affect the average outcome.
 
@@ -392,7 +722,7 @@ In Nickerson's rolling protocol design [@Nickerson2005], researchers create a ra
 
 2. The decision to stop treatment attempts must be based solely on resources, not on characteristics of the subjects or clusters.
 
-3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.05 will be considered evidence of noncomparability.
+3. Comparison of baseline characteristics: We will estimate a linear regression of the proposed treatment group indicator on baseline covariates and perform a heteroskedasticity-robust F-test [@Wooldridge2010, p. 62] of the hypothesis that all coefficients on the covariates are zero. A p-value below 0.05 will be considered evidence of noncomparability.
 
 If these checks cast doubt on the comparability of treatment and control groups, we will not move any unattempted treatment group members into the control group.
 
@@ -402,7 +732,7 @@ If these checks cast doubt on the comparability of treatment and control groups,
 
 1. Implementation: Were all treatment arms handled symmetrically as far as the timing and format of data collection and the personnel involved? Did each arm's subjects have the same incentives to participate in follow-up? Were the data collection personnel blind to treatment assignment?
 
-2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test (@Wooldridge2010, p. 62) of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.
+2. Comparison of attrition rates across treatment arms: In a two-arm trial, we will perform a two-tailed unequal-variances t-test of the hypothesis that treatment does not affect the attrition rate. In a multi-arm trial, we will perform a heteroskedasticity-robust F-test [@Wooldridge2010, p. 62] of the hypothesis that none of the treatments affect the attrition rate. In either case, we will implement the test as a Studentized permutation test—i.e., a test that compares the observed t- or F-statistic with its empirical distribution under random reassignments of treatment.
 
 3. Comparison of attrition patterns across treatment arms: Using a linear regression of an attrition indicator on treatment, baseline covariates, and treatment-covariate interactions, we will perform a heteroskedasticity-robust F-test of the hypothesis that all the interaction coefficients are zero. The covariates in this regression will be the same as those used in the covariate balance test (see the section on "Covariate imbalance and the detection of administrative errors"). As in check #2, we will implement the test as a Studentized permutation test.
 
@@ -412,7 +742,7 @@ If any of those checks raises a red flag, and if the PAP has not specified metho
 
 1. Rely on second-round sampling of nonrespondents, combined with extreme value bounds [@Aronow2015] if (a) the project has adequate resources and (b) it is plausible to assume that potential outcomes are invariant to whether they are observed in the initial sample or the follow-up sample. If either (a) or (b) is not met, go to step 2.
 
-2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds (@Gerber2012, pp. 226-227). (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
+2. Consult a disinterested "jury" of colleagues to decide whether the monotonicity assumption for trimming bounds [@Lee2009; @Gerber2012, p. 227] is plausible. If so, report estimates of trimming bounds; if not, report estimates of extreme value (Manski-type) bounds [@Gerber2012, pp. 226-227]. (If the outcome has unbounded range, report extreme value bounds that assume the largest observed value is the largest possible value.) In either case, also report the analysis that was specified in the PAP.
 
 # Outliers
 
@@ -540,7 +870,7 @@ Subjects in a lab or survey experiment may indicate in a post-experimental debri
 
 ## Whether to exclude subjects who display inattention in survey experiments
 
-In an online survey experiment, some subjects may be clicking answers arbitrarily to complete the survey quickly. To detect such behavior, researchers sometimes insert "screener" questions (@Berinsky2014) to assess whether subjects are paying attention to the content of the survey (e.g., a question that simply directs respondents to check a particular box). In such cases, we will report an analysis excluding the "inattentive" respondents (those who answered the screener questions incorrectly) if (1) there is nothing about the treatment that would cause inattention to be more or less common in one treatment arm and (2) we find no evidence that this sample exclusion creates noncomparability between the treatment arms when checks #2-#4 from the section on "Treatment/placebo designs" are performed in this context (classifying "inattentive" respondents as noncompliers). We will also report results from the full sample as a robustness check.
+In an online survey experiment, some subjects may be clicking answers arbitrarily to complete the survey quickly. To detect such behavior, researchers sometimes insert "screener" questions [@Berinsky2014] to assess whether subjects are paying attention to the content of the survey (e.g., a question that simply directs respondents to check a particular box). In such cases, we will report an analysis excluding the "inattentive" respondents (those who answered the screener questions incorrectly) if (1) there is nothing about the treatment that would cause inattention to be more or less common in one treatment arm and (2) we find no evidence that this sample exclusion creates noncomparability between the treatment arms when checks #2-#4 from the section on "Treatment/placebo designs" are performed in this context (classifying "inattentive" respondents as noncompliers). We will also report results from the full sample as a robustness check.
 
 If either condition (1) or condition (2) above is not satisfied, we will not exclude the "inattentive" respondents.
 
