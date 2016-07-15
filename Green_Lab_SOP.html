@@ -125,7 +125,7 @@ img {
 </ul>
 </div>
 
-<p>This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see <span class="citation">Lin and Green (forthcoming)</span>.</p>
+<p>This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see <span class="citation">Lin and Green (2016)</span>.</p>
 <p>This is a living document. To suggest changes or additions, please feel free to e-mail us<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> or submit an <a href="https://github.com/acoppock/Green-Lab-SOP/issues">issue on GitHub</a>. Also, when referencing this document, please be sure to note the version and date.</p>
 <p>Many thanks to Peter Aronow, Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Berk Özler, Anselm Rink, Cyrus Samii, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and José Zubizarreta for helpful comments and discussions.</p>
 <div id="preliminary-checks-on-data-preparation-and-study-implementation" class="section level1">
@@ -543,13 +543,13 @@ coeftest(fit_adj, vcov = vcovHC(fit_adj, type = &quot;HC2&quot;))</code></pre>
 <pre><code>## 
 ## t test of coefficients:
 ## 
-##             Estimate Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)  1.29203    0.11303 11.4309 &lt; 2.2e-16 ***
-## Z            0.43301    0.14545  2.9770  0.003282 ** 
-## X1_c         0.61644    0.12126  5.0836 8.688e-07 ***
-## X2_c         3.09607    0.23272 13.3036 &lt; 2.2e-16 ***
-## Z:X1_c      -0.05334    0.14811 -0.3601  0.719142    
-## Z:X2_c      -0.11205    0.29802 -0.3760  0.707345    
+##              Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)  1.505226   0.098686 15.2527 &lt; 2.2e-16 ***
+## Z            0.368132   0.134766  2.7316  0.006883 ** 
+## X1_c         0.645658   0.104423  6.1831  3.64e-09 ***
+## X2_c         3.201632   0.201727 15.8711 &lt; 2.2e-16 ***
+## Z:X1_c      -0.072337   0.132882 -0.5444  0.586809    
+## Z:X2_c      -0.379505   0.275059 -1.3797  0.169260    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <pre class="r"><code># Compare to unadjusted model
@@ -559,8 +559,8 @@ coeftest(fit_unadj, vcov = vcovHC(fit_unadj, type = &quot;HC2&quot;))</code></pr
 ## t test of coefficients:
 ## 
 ##             Estimate Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)  1.27542    0.20180  6.3202 1.694e-09 ***
-## Z            0.46478    0.27627  1.6823   0.09408 .  
+## (Intercept)  1.20672    0.19798  6.0953 5.612e-09 ***
+## Z            0.93014    0.26433  3.5189 0.0005376 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -635,15 +635,15 @@ coeftest(fit_adj, vcov = vcovHC(fit_adj, type = &quot;HC2&quot;))</code></pre>
 <pre><code>## 
 ## t test of coefficients:
 ## 
-##                Estimate Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)     1.62060    0.18734  8.6505 2.034e-15 ***
-## Z               0.53656    0.25715  2.0865 0.0382514 *  
-## X1_c            0.31504    0.19685  1.6004 0.1111633    
-## X2_c            1.27170    0.36736  3.4618 0.0006614 ***
-## X2_missing_c   -0.59088    0.43996 -1.3430 0.1808462    
-## Z:X1_c         -0.31740    0.27610 -1.1496 0.2517429    
-## Z:X2_c         -1.00266    0.51571 -1.9442 0.0533306 .  
-## Z:X2_missing_c  1.20985    0.58868  2.0552 0.0412144 *  
+##                   Estimate  Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)     1.44742195  0.20127041  7.1914 1.394e-11 ***
+## Z               0.58326426  0.27372230  2.1309   0.03437 *  
+## X1_c            0.00087558  0.22045960  0.0040   0.99684    
+## X2_c           -0.32443603  0.40687516 -0.7974   0.42621    
+## X2_missing_c    0.41542250  0.44477734  0.9340   0.35148    
+## Z:X1_c         -0.06550287  0.28071180 -0.2333   0.81574    
+## Z:X2_c          0.24070612  0.54591276  0.4409   0.65976    
+## Z:X2_missing_c -0.72621405  0.59276853 -1.2251   0.22203    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -916,7 +916,7 @@ plot(probabilities, ylim=c(0,1))</code></pre>
 <p>Lin, Winston. 2012a. “Regression Adjustment in Randomized Experiments: Is the Cure Really Worse than the Disease? Part I.” <a href="http://web.archive.org/web/20150505184132/http://blogs.worldbank.org/impactevaluations/node/847" class="uri">http://web.archive.org/web/20150505184132/http://blogs.worldbank.org/impactevaluations/node/847</a>.</p>
 <p>———. 2012b. “Regression Adjustment in Randomized Experiments: Is the Cure Really Worse than the Disease? Part II.” <a href="http://web.archive.org/web/20150505184245/http://blogs.worldbank.org/impactevaluations/node/849" class="uri">http://web.archive.org/web/20150505184245/http://blogs.worldbank.org/impactevaluations/node/849</a>.</p>
 <p>———. 2013. “Agnostic Notes on Regression Adjustments to Experimental Data: Reexamining Freedman’s Critique.” <em>Annals of Applied Statistics</em> 7 (1): 295–318. doi:<a href="http://dx.doi.org/10.1214/12-AOAS583">10.1214/12-AOAS583</a>.</p>
-<p>Lin, Winston, and Donald P. Green. forthcoming. “Standard Operating Procedures: A Safety Net for Pre-Analysis Plans.” <em>PS: Political Science and Politics</em>. <a href="http://www.stat.berkeley.edu/~winston/sop-safety-net.pdf" class="uri">http://www.stat.berkeley.edu/~winston/sop-safety-net.pdf</a>.</p>
+<p>Lin, Winston, and Donald P. Green. 2016. “Standard Operating Procedures: A Safety Net for Pre-Analysis Plans.” <em>PS: Political Science and Politics</em> 49 (03): 495–99. <a href="http://www.stat.berkeley.edu/~winston/sop-safety-net.pdf" class="uri">http://www.stat.berkeley.edu/~winston/sop-safety-net.pdf</a>.</p>
 <p>McCaffrey, Daniel F., Robert M. Bell, and Carsten H. Botts. 2001. “Generalizations of Biased Reduced Linearization.” <a href="https://web.archive.org/web/20151110163144/http://www.amstat.org/sections/SRMS/Proceedings/y2001/Proceed/00264.pdf" class="uri">https://web.archive.org/web/20151110163144/http://www.amstat.org/sections/SRMS/Proceedings/y2001/Proceed/00264.pdf</a>.</p>
 <p>Middleton, Joel A., and Peter M. Aronow. 2015. “Unbiased Estimation of the Average Treatment Effect in Cluster-Randomized Experiments.” <em>Statistics, Politics and Policy</em> 6 (1–2): 39–75. doi:<a href="http://dx.doi.org/10.1515/spp-2013-0002">10.1515/spp-2013-0002</a>.</p>
 <p>Moher, David, Sally Hopewell, Kenneth F. Schulz, Victor Montori, Peter C. Gøtzsche, P. J. Devereaux, Diana Elbourne, Matthias Egger, and Douglas G. Altman. 2010. “CONSORT 2010 Explanation and Elaboration: Updated Guidelines for Reporting Parallel Group Randomised Trials.” <em>BMJ</em> 340: c869. doi:<a href="http://dx.doi.org/10.1136/bmj.c869">10.1136/bmj.c869</a>.</p>
@@ -939,7 +939,7 @@ plot(probabilities, ylim=c(0,1))</code></pre>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="mailto:winston.lin@columbia.edu">winston.lin@columbia.edu</a> (Lin), <a href="mailto:dpg2110@columbia.edu">dpg2110@columbia.edu</a> (Green), and <a href="mailto:a.coppock@columbia.edu">a.coppock@columbia.edu</a> (Coppock).<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p><a href="mailto:winston.lin@columbia.edu">winston.lin@columbia.edu</a> (Lin), <a href="mailto:dpg2110@columbia.edu">dpg2110@columbia.edu</a> (Green), and <a href="mailto:alex.coppock@yale.edu">alex.coppock@yale.edu</a> (Coppock).<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>If any of these checks require access to confidential data, we will obtain Institutional Review Board approval for the team members performing the checks.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p><span class="citation">Cameron and Miller (2015)</span>, <span class="citation">Pustejovsky and Tipton (2016)</span>, and <span class="citation">Young (2016)</span> also give helpful discussions and simulation evidence supporting similar adjustments.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>The BM adjustment has been extended to weighted least squares (WLS) regression <span class="citation">(McCaffrey, Bell, and Botts 2001; Pustejovsky and Tipton 2016)</span>. James Pustejovsky’s <a href="https://github.com/jepusto/clubSandwich"><code>clubSandwich</code></a> R package, which implements this extension (among other things), is in active development at the time of this writing. For now, our SOP adopts the BM adjustment for OLS regression as our default and shows how to use OLS with treatment–block interactions instead of WLS to analyze block-randomized experiments with treatment probabilities that vary by block.<a href="#fnref4">↩</a></p></li>
