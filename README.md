@@ -1,6 +1,8 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 This standard operating procedure (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. The contents of our lab's SOP available for public use. We welcome others to copy or adapt it to suit their research purposes.
 
+[HTML version of SOP](http://htmlpreview.github.io/?https://github.com/acoppock/Green-Lab-SOP/blob/master/Green_Lab_SOP.html)
+
 [PDF version of SOP](https://github.com/acoppock/Green-Lab-SOP/raw/master/Green_Lab_SOP.pdf)
 
 [Article on motivations for SOP](http://www.columbia.edu/~wl2513/sop-safety-net.pdf)
