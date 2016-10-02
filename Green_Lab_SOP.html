@@ -146,7 +146,7 @@ img {
 <h1>Standard errors, confidence intervals, and significance tests</h1>
 <div id="bellmccaffrey-adjustment-for-standard-errors-and-confidence-intervals" class="section level2">
 <h2>Bell–McCaffrey adjustment for standard errors and confidence intervals</h2>
-<p>Many scholars agree that uncertainty due to sampling variability should be communicated not solely via null hypothesis significance testing, but via methods that focus on the magnitude of the estimated effect and the range of magnitudes compatible with the data, such as confidence intervals <span class="citation">(Moher et al. 2010; Vazire 2016; Greenland et al. 2016; Wasserstein and Lazar forthcoming)</span>. Some journals require or encourage reporting of confidence intervals (CIs), while in others it is more typical to report estimated standard errors (SEs) along with point estimates. SEs are of interest not so much for their own sake as for enabling the construction of CIs and tests <span class="citation">(Efron 1986; Pustejovsky and Tipton 2016)</span>. Thus, if SEs are reported without explicit CIs, they should ideally be accompanied by sufficient information for CI construction, such as the degrees of freedom for the distribution of the t-statistic.</p>
+<p>Many scholars agree that uncertainty due to sampling variability should be communicated not solely via null hypothesis significance testing, but via methods that focus on the magnitude of the estimated effect and the range of magnitudes compatible with the data, such as confidence intervals <span class="citation">(Moher et al. 2010; Vazire 2016; Greenland et al. 2016; Wasserstein and Lazar 2016)</span>. Some journals require or encourage reporting of confidence intervals (CIs), while in others it is more typical to report estimated standard errors (SEs) along with point estimates. SEs are of interest not so much for their own sake as for enabling the construction of CIs and tests <span class="citation">(Efron 1986; Pustejovsky and Tipton 2016)</span>. Thus, if SEs are reported without explicit CIs, they should ideally be accompanied by sufficient information for CI construction, such as the degrees of freedom for the distribution of the t-statistic.</p>
 <p>Our default method for SEs, degrees of freedom, and CIs is the Bell–McCaffrey (BM) adjustment <span class="citation">(Bell and McCaffrey 2002)</span>. <span class="citation">Imbens and Koles<span>á</span>r (forthcoming)</span> give a very helpful discussion of the procedure and “recommend that empirical researchers should, as a matter of routine, use the BM confidence intervals.”<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> Similar to Welch’s unequal-variances t-test, the BM adjustment combines a bias-reduced version of the “robust” or “cluster-robust” SE with a Satterthwaite approximation for the degrees of freedom of the t-distribution. PAPs are (as always) free to deviate from this default approach. Our primary goal here is to obtain approximately valid CIs for average treatment effects (where “valid” means that the actual coverage probability equals or exceeds the nominal coverage). A researcher preparing a PAP for a specific experiment may have reason to believe, based on statistical theory and/or simulations, that a simpler method (e.g., using a critical value from the standard normal distribution instead of the t-distribution when the sample is sufficiently large, or using the classical OLS SE when subjects are randomly assigned to two equal-sized groups) will achieve the same goal, that a different approach is needed due to complexities in the experimental design or the point estimation procedure, or that a different approach will yield more precision.</p>
 <p>Below, we give example R code (a slight adaptation of Michal Kolesár’s <code>BMlmSE()</code> function) to perform the BM adjustment given a fitted OLS regression.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <div id="example-r-code-for-bellmccaffrey-adjustment" class="section level3">
@@ -543,13 +543,13 @@ coeftest(fit_adj, vcov = vcovHC(fit_adj, type = &quot;HC2&quot;))</code></pre>
 <pre><code>## 
 ## t test of coefficients:
 ## 
-##              Estimate Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)  1.505226   0.098686 15.2527 &lt; 2.2e-16 ***
-## Z            0.368132   0.134766  2.7316  0.006883 ** 
-## X1_c         0.645658   0.104423  6.1831  3.64e-09 ***
-## X2_c         3.201632   0.201727 15.8711 &lt; 2.2e-16 ***
-## Z:X1_c      -0.072337   0.132882 -0.5444  0.586809    
-## Z:X2_c      -0.379505   0.275059 -1.3797  0.169260    
+##             Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)  1.75299    0.10730 16.3369 &lt; 2.2e-16 ***
+## Z            0.27409    0.14584  1.8794   0.06168 .  
+## X1_c         0.45776    0.08792  5.2066 4.882e-07 ***
+## X2_c         2.88761    0.22307 12.9448 &lt; 2.2e-16 ***
+## Z:X1_c       0.22261    0.13873  1.6046   0.11020    
+## Z:X2_c       0.23336    0.30281  0.7706   0.44186    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <pre class="r"><code># Compare to unadjusted model
@@ -559,8 +559,8 @@ coeftest(fit_unadj, vcov = vcovHC(fit_unadj, type = &quot;HC2&quot;))</code></pr
 ## t test of coefficients:
 ## 
 ##             Estimate Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)  1.20672    0.19798  6.0953 5.612e-09 ***
-## Z            0.93014    0.26433  3.5189 0.0005376 ***
+## (Intercept)  1.63203    0.18375  8.8817 4.006e-16 ***
+## Z            0.52214    0.27108  1.9262   0.05552 .  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -635,15 +635,15 @@ coeftest(fit_adj, vcov = vcovHC(fit_adj, type = &quot;HC2&quot;))</code></pre>
 <pre><code>## 
 ## t test of coefficients:
 ## 
-##                   Estimate  Std. Error t value  Pr(&gt;|t|)    
-## (Intercept)     1.44742195  0.20127041  7.1914 1.394e-11 ***
-## Z               0.58326426  0.27372230  2.1309   0.03437 *  
-## X1_c            0.00087558  0.22045960  0.0040   0.99684    
-## X2_c           -0.32443603  0.40687516 -0.7974   0.42621    
-## X2_missing_c    0.41542250  0.44477734  0.9340   0.35148    
-## Z:X1_c         -0.06550287  0.28071180 -0.2333   0.81574    
-## Z:X2_c          0.24070612  0.54591276  0.4409   0.65976    
-## Z:X2_missing_c -0.72621405  0.59276853 -1.2251   0.22203    
+##                 Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)     1.720311   0.203587  8.4500 7.156e-15 ***
+## Z               0.614091   0.276793  2.2186   0.02769 *  
+## X1_c            0.013831   0.191310  0.0723   0.94244    
+## X2_c           -0.489574   0.409528 -1.1955   0.23338    
+## X2_missing_c    0.148168   0.547133  0.2708   0.78683    
+## Z:X1_c         -0.045201   0.254377 -0.1777   0.85915    
+## Z:X2_c          1.070352   0.555649  1.9263   0.05554 .  
+## Z:X2_missing_c -0.544275   0.691823 -0.7867   0.43241    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -930,7 +930,7 @@ plot(probabilities, ylim=c(0,1))</code></pre>
 <p>Schochet, Peter Z. 2010. “Is Regression Adjustment Supported by the Neyman Model for Causal Inference?” <em>Journal of Statistical Planning and Inference</em> 140 (1): 246–59. doi:<a href="http://dx.doi.org/10.1016/j.jspi.2009.07.008">10.1016/j.jspi.2009.07.008</a>.</p>
 <p>Tukey, John W. 1993. “Tightening the Clinical Trial.” <em>Controlled Clinical Trials</em> 14 (4): 266–85. doi:<a href="http://dx.doi.org/10.1016/0197-2456(93)90225-3">10.1016/0197-2456(93)90225-3</a>.</p>
 <p>Vazire, Simine. 2016. “Editorial.” <em>Social Psychological and Personality Science</em> 7 (1): 3–7. doi:<a href="http://dx.doi.org/10.1177/1948550615603955">10.1177/1948550615603955</a>.</p>
-<p>Wasserstein, Ronald L., and Nicole A. Lazar. forthcoming. “The ASA’s Statement on P-Values: Context, Process, and Purpose.” <em>American Statistician</em>. doi:<a href="http://dx.doi.org/10.1080/00031305.2016.1154108">10.1080/00031305.2016.1154108</a>.</p>
+<p>Wasserstein, Ronald L., and Nicole A. Lazar. 2016. “The ASA’s Statement on P-Values: Context, Process, and Purpose.” <em>American Statistician</em> 70 (2): 129–33. doi:<a href="http://dx.doi.org/10.1080/00031305.2016.1154108">10.1080/00031305.2016.1154108</a>.</p>
 <p>Wooldridge, Jeffrey M. 2010. <em>Econometric Analysis of Cross Section and Panel Data</em>. 2nd ed. MIT Press. <a href="http://site.ebrary.com/lib/columbia/detail.action?docID=10453042" class="uri">http://site.ebrary.com/lib/columbia/detail.action?docID=10453042</a>.</p>
 <p>Young, Alwyn. 2016. “Improved, Nearly Exact, Statistical Inference with Robust and Clustered Covariance Matrices Using Effective Degrees of Freedom Corrections.” <a href="http://personal.lse.ac.uk/YoungA/Improved.pdf" class="uri">http://personal.lse.ac.uk/YoungA/Improved.pdf</a>.</p>
 </div>
