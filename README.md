@@ -5,7 +5,7 @@ This standard operating procedure (SOP) document describes the default practices
 
 [PDF version of SOP](https://github.com/acoppock/Green-Lab-SOP/raw/master/Green_Lab_SOP.pdf)
 
-[Article on motivations for SOP](http://www.columbia.edu/~wl2513/sop-safety-net.pdf)
+[Article on motivations for SOP](https://www.stat.berkeley.edu/~winston/sop-safety-net.pdf)
 
 This is a living document. To suggest changes or additions, please feel free to e-mail us or submit an [issue on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing our SOP, please be sure to note the version and date.
 
@@ -13,4 +13,4 @@ Alex Coppock (<alex.coppock@yale.edu>)
 
 Don Green (<dpg2110@columbia.edu>)
 
-Winston Lin (<winston.lin@columbia.edu>)
+Winston Lin (<Linston@gmail.com>)
