@@ -3,17 +3,17 @@ title: "Standard operating procedures for Don Green's lab at Columbia"
 author: "Winston Lin, Donald P. Green, and Alexander Coppock"
 date: 'Version 1.05: June 7, 2016'
 output:
+  pdf_document:
+    toc: yes
   html_document:
     theme: cosmo
-    toc: yes
-  pdf_document:
     toc: yes
 bibliography: SOP.bib
 ---
 \pagebreak
 This standard operating procedures (SOP) document describes the default practices of the experimental research group led by Donald P. Green at Columbia University. These defaults apply to analytic decisions that have not been made explicit in pre-analysis plans (PAPs). They are not meant to override decisions that are laid out in PAPs. For more discussion of the motivations for SOP, see @LinGreen2015.
 
-This is a living document. To suggest changes or additions, please feel free to e-mail us^[winston.lin@columbia.edu (Lin), dpg2110@columbia.edu (Green), and alex.coppock@yale.edu (Coppock).] or submit an [issue on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version and date.
+This is a living document. To suggest changes or additions, please feel free to e-mail us^[Linston@gmail.com (Lin), dpg2110@columbia.edu (Green), and alex.coppock@yale.edu (Coppock).] or submit an [issue on GitHub](https://github.com/acoppock/Green-Lab-SOP/issues). Also, when referencing this document, please be sure to note the version and date.
 
 Many thanks to Peter Aronow, Susanne Baltes, Jake Bowers, Al Fang, Macartan Humphreys, Berk Özler, Anselm Rink, Cyrus Samii, Michael Schwam-Baird, Uri Simonsohn, Amber Spry, Dane Thorley, Anna Wilke, and José Zubizarreta for helpful comments and discussions.
 
